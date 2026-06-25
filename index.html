@@ -18,7 +18,6 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Staff Directory</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
@@ -352,9 +351,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="nav-actions">
     <button class="icon-btn" title="Toggle dark mode" onclick="toggleTheme()">
       <i id="theme-icon" class="ti ti-moon"></i>
-    </button>
-    <button class="icon-btn" title="Export PDF" onclick="exportPDF()">
-      <i class="ti ti-file-type-pdf"></i>
     </button>
     <button class="icon-btn" title="Print" onclick="window.print()">
       <i class="ti ti-printer"></i>
@@ -1182,40 +1178,6 @@ function deleteDirect(id){
 }
 function deleteCurrentEdit(){if(!editId)return;closeDutySheet();deleteDirect(editId);closePanel();}
 
-// ── Export PDF ──
-async function exportPDF(){
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const list=getFiltered();const pageW=doc.internal.pageSize.getWidth();const margin=15;let y=margin;
-  doc.setFillColor(24,95,165);doc.rect(0,0,pageW,18,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('Staff Directory',margin,12);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);
-  doc.text(`${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}  ·  ${list.length} staff`,pageW-margin,12,{align:'right'});
-  y=26;const cols=[10,55,90,120,150,185];
-  doc.setFillColor(235,240,248);doc.rect(margin,y-5,pageW-margin*2,9,'F');
-  doc.setTextColor(24,95,165);doc.setFont('helvetica','bold');doc.setFontSize(8);
-  ['#','Name','Role','Department','Phone','WhatsApp'].forEach((h,i)=>doc.text(h,margin+cols[i],y));
-  y+=5;
-  list.forEach((s,idx)=>{
-    if(y>270){doc.addPage();y=20;}
-    doc.setFillColor(...(idx%2===0?[255,255,255]:[248,249,252]));
-    doc.rect(margin,y-4,pageW-margin*2,8,'F');
-    doc.setTextColor(s.duty?20:120,s.duty?20:120,s.duty?20:120);
-    doc.setFont('helvetica',s.duty?'normal':'italic');doc.setFontSize(8);
-    [String(idx+1),s.name,s.role,s.dept||'—',s.phone,s.whatsapp||'—'].forEach((val,i)=>{
-      const max=i===1?30:i===3?25:22;
-      doc.text(val.length>max?val.slice(0,max-1)+'…':val,margin+cols[i],y);
-    });
-    if(!s.duty){doc.setTextColor(160,100,50);doc.setFontSize(7);doc.text('off duty',margin+cols[5]+20,y);}
-    y+=8;
-  });
-  doc.setTextColor(150,150,150);doc.setFontSize(7);doc.setFont('helvetica','normal');
-  doc.text('Confidential — Internal use only',margin,290);doc.text('Page 1',pageW-margin,290,{align:'right'});
-  doc.save(`staff-directory-${new Date().toISOString().slice(0,10)}.pdf`);
-  showToast('PDF exported','ti-file-type-pdf');
-}
-
-
 // ── Availability Sheet ──
 let availTab = 'All';
 let availSearch = '';
@@ -1295,15 +1257,18 @@ const shiftsCollection = db.collection('shifts');
 let shifts = {}; // { 'YYYY-MM-DD': [ {id,staffId,start,end}, … ] }
 let shiftDay = todayKey();
 let shiftUnsubscribe = null;
+let shiftLoadError = null;
 
 function todayKey(){
-  const d = new Date();
-  return d.toISOString().slice(0,10);
+  return dayKey(0);
 }
 function dayKey(offset){
   const d = new Date();
   d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0,10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
 }
 function fmtDayLabel(key){
   const d = new Date(key + 'T00:00:00');
@@ -1349,6 +1314,7 @@ function getCardShiftBadge(staffId){
 function initShifts(){
   // Listen to shifts collection real-time
   shiftUnsubscribe = shiftsCollection.onSnapshot(snap=>{
+    shiftLoadError = null;
     shifts = {};
     snap.docs.forEach(d=>{
       const data = d.data();
@@ -1356,9 +1322,12 @@ function initShifts(){
       shifts[data.date].push({id:d.id,...data});
     });
     renderGrid(); // update card badges
-    if(document.getElementById('shift-overlay').classList.contains('open')) renderShiftBody();
-    renderShiftSummaryBar();
-  }, err=>console.error('Shifts snapshot error:',err));
+    if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+  }, err=>{
+    console.error('Shifts snapshot error:',err);
+    shiftLoadError = err;
+    if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+  });
 }
 
 function openShiftSheet(){
@@ -1410,6 +1379,12 @@ function renderShiftSummaryBar(){
 function renderShiftBody(){
   const body = document.getElementById('shift-body');
   const isAdmin = adminUnlocked;
+
+  if(shiftLoadError){
+    body.innerHTML = `<div class="shift-empty"><i class="ti ti-cloud-off"></i><p>Couldn't load shifts.</p><p style="font-size:11px;margin-top:4px;opacity:.7">${escH(shiftLoadError.code||shiftLoadError.message||'Check your Firestore rules for the "shifts" collection.')}</p></div>`;
+    return;
+  }
+
   const dayShifts = shifts[shiftDay]||[];
 
   // Add-shift row (admin only)

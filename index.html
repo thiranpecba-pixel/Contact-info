@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Staff Directory</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg:#ffffff; --bg2:#f4f3f0; --bg3:#eae8e4;
+  --text:#1a1a18; --text2:#5f5e5a; --text3:#9a9890;
+  --border:rgba(0,0,0,0.11); --border2:rgba(0,0,0,0.20);
+  --radius:10px; --radius-lg:16px;
+  --blue:#185FA5; --blue-bg:#E6F1FB; --blue-text:#0C447C;
+  --purple-bg:#EEEDFE; --purple-text:#534AB7;
+  --green:#2E7D32; --green-bg:#EAF3DE; --green-text:#3B6D11;
+  --gray-bg:#F1EFE8; --gray-text:#6B6860;
+  --red:#A32D2D; --red-bg:#FCEBEB;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 2px 10px rgba(0,0,0,0.10);
+}
+[data-theme="dark"] {
+  --bg:#1c1c1a; --bg2:#232320; --bg3:#2c2c29;
+  --text:#f0ede8; --text2:#a8a59f; --text3:#706e6a;
+  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.17);
+  --blue:#5BA3E0; --blue-bg:#0b2640; --blue-text:#85B7EB;
+  --purple-bg:#1e1b45; --purple-text:#AFA9EC;
+  --green:#66BB6A; --green-bg:#0f2208; --green-text:#97C459;
+  --gray-bg:#2a2a28; --gray-text:#888780;
+  --red:#E07070; --red-bg:#3a1515;
+  --shadow:0 1px 3px rgba(0,0,0,0.25);
+  --shadow-md:0 2px 10px rgba(0,0,0,0.35);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;transition:background .2s,color .2s}
+
+/* ── NAV ── */
+.topnav{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 1rem;display:flex;align-items:center;height:54px;gap:8px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.nav-brand{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-0.3px}
+.nav-brand i{font-size:20px;color:var(--blue)}
+.nav-spacer{flex:1}
+.nav-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{width:38px;height:38px;border-radius:var(--radius);border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:19px;transition:background .15s,color .15s;-webkit-appearance:none}
+.icon-btn:active{background:var(--bg3)}
+@media(hover:hover){.icon-btn:hover{background:var(--bg2);color:var(--text)}}
+
+/* ── ADMIN BAR ── */
+.admin-bar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text2)}
+.admin-bar.unlocked{background:var(--blue-bg);border-color:rgba(24,95,165,0.22)}
+.admin-bar input{padding:7px 11px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;width:120px;-webkit-appearance:none}
+.admin-bar input:focus{border-color:var(--blue)}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 16px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s;-webkit-appearance:none;touch-action:manipulation}
+.btn:active{opacity:.85}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:.85rem 1rem 0}
+.stat-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:.7rem .6rem;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:var(--shadow)}
+.stat-num{font-size:22px;font-weight:700;color:var(--text);line-height:1}
+.stat-label{font-size:10px;color:var(--text2);text-align:center;line-height:1.2}
+.stat-dot{width:8px;height:8px;border-radius:50%;margin-bottom:1px}
+
+/* ── TOOLBAR ── */
+.toolbar{padding:.75rem 1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:0}
+.search-wrap input{width:100%;padding:10px 12px 10px 36px;font-size:15px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none}
+.search-wrap input:focus{border-color:var(--blue)}
+.search-wrap .si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--text3);pointer-events:none}
+.filter-row{display:flex;gap:6px;width:100%;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-btn{padding:7px 14px;font-size:13px;border:0.5px solid var(--border);border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;touch-action:manipulation}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sort-select{padding:8px 10px;font-size:13px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;flex-shrink:0;-webkit-appearance:none;appearance:none;padding-right:24px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23888' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+
+/* ── CARDS ── */
+.grid-wrap{padding:0 1rem 5rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:.75rem}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem .9rem .8rem;display:flex;flex-direction:column;gap:0;box-shadow:var(--shadow);transition:border-color .15s}
+.card.off-duty{opacity:.75}
+
+.avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;margin-bottom:8px;flex-shrink:0;border:0.5px solid var(--border)}
+.card-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.25;margin-bottom:2px}
+.card-dept{font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.3}
+.role-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-bottom:8px;letter-spacing:.2px}
+.tag-tech{background:var(--blue-bg);color:var(--blue-text)}
+.tag-agent{background:var(--purple-bg);color:var(--purple-text)}
+.contact-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.contact-row i{font-size:14px;color:var(--text3);flex-shrink:0}
+.contact-row a{font-size:12px;color:var(--blue);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contact-row a.wa-link{color:var(--green-text)}
+.card-spacer{flex:1;min-height:6px}
+
+/* ── DUTY TOGGLE ── */
+.duty-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
+.duty-label{font-size:11px;font-weight:600;color:var(--text2)}
+.duty-label.on{color:var(--green-text)}
+.duty-label.off{color:var(--text3)}
+
+/* Toggle switch */
+.toggle-wrap{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--bg3);border-radius:11px;cursor:pointer;transition:background .2s;border:0.5px solid var(--border)}
+.toggle-track::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle-wrap input:checked + .toggle-track{background:var(--green);border-color:var(--green)}
+.toggle-wrap input:checked + .toggle-track::after{transform:translateX(18px)}
+.toggle-wrap input:disabled + .toggle-track{cursor:default;opacity:.5}
+
+/* Admin card actions */
+.card-actions{display:flex;gap:5px;margin-top:7px}
+.card-edit-btn{flex:1;font-size:11px;padding:5px 0;border-radius:8px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;touch-action:manipulation}
+.card-edit-btn:active{background:var(--bg3)}
+.card-del-btn{width:34px;font-size:14px;padding:5px;border-radius:8px;border:0.5px solid var(--border);background:transparent;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.card-del-btn:active{background:var(--red-bg)}
+
+/* ── QUICK DUTY PANEL (manager shortcut) ── */
+.fab{position:fixed;bottom:1.2rem;right:1.2rem;z-index:90;width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:24px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(24,95,165,0.4);touch-action:manipulation}
+.fab.visible{display:flex}
+.fab-label{position:fixed;bottom:1.45rem;right:4.8rem;z-index:90;background:var(--blue);color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;display:none;white-space:nowrap;box-shadow:var(--shadow-md)}
+.fab-label.visible{display:block}
+
+.duty-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.duty-sheet-overlay.open{display:flex}
+.duty-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0)}
+.duty-sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0}
+.duty-sheet-header{padding:.9rem 1.1rem .6rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.duty-sheet-title{font-size:16px;font-weight:700;color:var(--text)}
+.duty-list{overflow-y:auto;flex:1;padding:.5rem .75rem .75rem}
+.duty-item{display:flex;align-items:center;gap:10px;padding:.65rem .5rem;border-bottom:0.5px solid var(--border)}
+.duty-item:last-child{border-bottom:none}
+.duty-item-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.duty-item-info{flex:1;min-width:0}
+.duty-item-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.duty-item-role{font-size:11px;color:var(--text2)}
+.duty-item-toggle{flex-shrink:0}
+.duty-filter-tabs{display:flex;gap:6px;padding:.5rem .75rem;border-bottom:0.5px solid var(--border)}
+.duty-tab{padding:5px 12px;font-size:12px;font-weight:500;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
+.duty-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── SIDE PANEL (edit/add) ── */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;display:none;align-items:flex-end;justify-content:center}
+.panel-overlay.open{display:flex}
+@media(min-width:520px){.panel-overlay{align-items:center}}
+.panel{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom,12px)}
+@media(min-width:520px){.panel{border-radius:var(--radius-lg);max-height:88vh}}
+.panel-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0}
+.panel-header{padding:.9rem 1.1rem .6rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1}
+.panel-title{font-size:16px;font-weight:700;color:var(--text)}
+.panel-body{padding:1rem 1.1rem}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-group label{font-size:12px;color:var(--text2);font-weight:600;letter-spacing:.2px}
+.form-group input,.form-group select{padding:10px 12px;font-size:15px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none;width:100%}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue);background:var(--bg)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-error{font-size:12px;color:var(--red);padding:7px 11px;background:var(--red-bg);border-radius:var(--radius);margin-bottom:10px;display:none}
+.panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;padding-bottom:4px}
+.panel-actions .btn{flex:1;justify-content:center;min-width:80px;padding:11px 10px;font-size:14px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text2);grid-column:1/-1}
+.empty i{font-size:36px;display:block;margin-bottom:8px;opacity:.4}
+.empty p{font-size:14px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:#1a1a18;color:#f0ede8;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.25);opacity:0;transition:opacity .25s;white-space:nowrap;display:flex;align-items:center;gap:7px;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ── PRINT ── */
+@media print{
+  .topnav,.admin-bar,.toolbar,.fab,.fab-label,.card-actions,.duty-row,.toast{display:none!important}
+  body{background:#fff}
+  .grid{grid-template-columns:repeat(3,1fr)!important}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a class="nav-brand" href="#">
+    <i class="ti ti-address-book" aria-hidden="true"></i>
+    Staff Directory
+  </a>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions">
+    <button class="icon-btn" title="Toggle dark mode" onclick="toggleTheme()">
+      <i id="theme-icon" class="ti ti-moon"></i>
+    </button>
+    <button class="icon-btn" title="Export PDF" onclick="exportPDF()">
+      <i class="ti ti-file-type-pdf"></i>
+    </button>
+    <button class="icon-btn" title="Print" onclick="window.print()">
+      <i class="ti ti-printer"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- ADMIN BAR -->
+<div class="admin-bar" id="admin-bar">
+  <i class="ti ti-lock" style="font-size:15px" aria-hidden="true"></i>
+  <span>Admin</span>
+  <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="8" />
+  <button class="btn btn-sm" onclick="unlockAdmin()"><i class="ti ti-key" aria-hidden="true"></i> Unlock</button>
+  <span id="pin-err" style="color:var(--red);font-size:12px;display:none">Wrong PIN</span>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" id="stats-row"></div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <i class="ti ti-search si" aria-hidden="true"></i>
+    <input type="text" id="search-input" placeholder="Search name, role, phone…" oninput="updateSearch(this.value)" />
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn active" id="f-All" onclick="setFilter('All')">All</button>
+    <button class="filter-btn" id="f-Technician" onclick="setFilter('Technician')">Technicians</button>
+    <button class="filter-btn" id="f-Agent" onclick="setFilter('Agent')">Agents</button>
+    <button class="filter-btn" id="f-OnDuty" onclick="setFilter('OnDuty')">On Duty</button>
+    <button class="filter-btn" id="f-OffDuty" onclick="setFilter('OffDuty')">Off Duty</button>
+    <select class="sort-select" onchange="updateSort(this.value)">
+      <option value="name">A–Z</option>
+      <option value="duty">Duty first</option>
+      <option value="role">Role</option>
+    </select>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+  <div class="grid" id="staff-grid"></div>
+</div>
+
+<!-- FAB: Quick duty toggle for admin -->
+<div class="fab-label" id="fab-label">Duty Manager</div>
+<button class="fab" id="fab" onclick="openDutySheet()" title="Quick duty toggle">
+  <i class="ti ti-toggle-right" aria-hidden="true"></i>
+</button>
+
+<!-- DUTY SHEET -->
+<div class="duty-sheet-overlay" id="duty-sheet-overlay" onclick="handleDutyOverlay(event)">
+  <div class="duty-sheet" id="duty-sheet">
+    <div class="duty-sheet-handle"></div>
+    <div class="duty-sheet-header">
+      <span class="duty-sheet-title"><i class="ti ti-toggle-right" style="vertical-align:-2px;margin-right:5px;color:var(--blue)" aria-hidden="true"></i>Duty Manager</span>
+      <button class="icon-btn" onclick="closeDutySheet()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="duty-filter-tabs">
+      <button class="duty-tab active" id="dt-All" onclick="setDutyTab('All')">All</button>
+      <button class="duty-tab" id="dt-Technician" onclick="setDutyTab('Technician')">Technicians</button>
+      <button class="duty-tab" id="dt-Agent" onclick="setDutyTab('Agent')">Agents</button>
+    </div>
+    <div class="duty-list" id="duty-list"></div>
+  </div>
+</div>
+
+<!-- EDIT / ADD PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="handlePanelOverlay(event)">
+  <div class="panel" id="side-panel">
+    <div class="panel-handle"></div>
+    <div class="panel-header">
+      <span class="panel-title" id="panel-title">Add member</span>
+      <button class="icon-btn" onclick="closePanel()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="panel-body">
+      <div id="form-error" class="form-error"></div>
+      <div class="form-group">
+        <label>Full name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Kamal Perera" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>Role *</label>
+        <select id="f-role">
+          <option value="Technician">Technician</option>
+          <option value="Agent">Agent</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="f-dept" placeholder="e.g. Field Operations" />
+      </div>
+      <div class="form-group">
+        <label>Phone number *</label>
+        <input type="tel" id="f-phone" placeholder="07X-XXX-XXXX" />
+      </div>
+      <div class="form-group">
+        <label>WhatsApp number</label>
+        <input type="tel" id="f-whatsapp" placeholder="07X-XXX-XXXX" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="e.g. name@company.com" autocomplete="off" />
+      </div>
+      <div class="panel-actions">
+        <button class="btn btn-primary" onclick="submitForm()"><i class="ti ti-check" aria-hidden="true"></i> <span id="submit-label">Add member</span></button>
+        <button class="btn btn-danger" id="delete-btn" style="display:none;flex:0 0 auto;min-width:unset;padding:11px 14px" onclick="deleteCurrentEdit()"><i class="ti ti-trash" aria-hidden="true"></i></button>
+        <button class="btn" style="flex:0 0 auto;min-width:unset" onclick="closePanel()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_PIN = '1234';
+
+// ── Firebase config ──
+// Paste your project's config here: Firebase console → Project settings → General →
+// "Your apps" → Web app → SDK setup and configuration → Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAuEKL8GkIxaUsxPRXQEd-jKZDaCaCraEM",
+  authDomain: "contact-info-c3cb3.firebaseapp.com",
+  projectId: "contact-info-c3cb3",
+  storageBucket: "contact-info-c3cb3.firebasestorage.app",
+  messagingSenderId: "922517814281",
+  appId: "1:922517814281:web:8b52c052d6e13af7e50cd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const staffCollection = db.collection('staff');
+
+// Used only to seed Firestore the very first time the collection is empty
+const DEFAULT_STAFF = [
+  {name:'Ashan Perera',role:'Technician',dept:'Field Operations',phone:'071-234-5678',whatsapp:'071-234-5678',email:'ashan.perera@company.com',duty:true},
+  {name:'Dilani Fernando',role:'Agent',dept:'Customer Service',phone:'077-345-6789',whatsapp:'077-345-6789',email:'dilani.fernando@company.com',duty:true},
+  {name:'Kasun Silva',role:'Technician',dept:'Network Support',phone:'076-456-7890',whatsapp:'076-456-7890',email:'kasun.silva@company.com',duty:false},
+  {name:'Nimasha De Silva',role:'Agent',dept:'Sales',phone:'070-567-8901',whatsapp:'070-567-8901',email:'nimasha.desilva@company.com',duty:true},
+  {name:'Ruwan Jayawardena',role:'Technician',dept:'Field Operations',phone:'075-678-9012',whatsapp:'075-678-9012',email:'ruwan.jayawardena@company.com',duty:true},
+  {name:'Sachini Bandara',role:'Agent',dept:'Customer Service',phone:'072-789-0123',whatsapp:'',email:'',duty:false},
+];
+
+let staff = [];
+let adminUnlocked = false;
+let filter = 'All';
+let search = '';
+let sort = 'name';
+let editId = null;
+let dutyTab = 'All';
+let theme = localStorage.getItem('sd_theme') || 'light';
+
+// ── Persistence (Firestore, real-time) ──
+function renderLoading(){
+  document.getElementById('staff-grid').innerHTML=`<div class="empty"><i class="ti ti-loader-2" aria-hidden="true"></i><p>Loading staff directory…</p></div>`;
+}
+async function initFirestoreData(){
+  renderLoading();
+  try{
+    const snap = await staffCollection.get();
+    if(snap.empty){
+      const batch = db.batch();
+      DEFAULT_STAFF.forEach(s=>batch.set(staffCollection.doc(), s));
+      await batch.commit();
+    }
+  }catch(e){
+    console.error('Firestore init error:',e);
+    document.getElementById('staff-grid').innerHTML=`<div class="empty"><i class="ti ti-cloud-off" aria-hidden="true"></i><p>Couldn't connect to Firebase. Check your firebaseConfig and Firestore rules.</p></div>`;
+    return;
+  }
+  staffCollection.onSnapshot(snapshot=>{
+    staff = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    renderAll();
+    if(document.getElementById('duty-sheet-overlay').classList.contains('open'))renderDutyList();
+  }, err=>{
+    console.error('Firestore snapshot error:',err);
+    showToast('Connection lost — check Firebase setup','ti-alert-triangle');
+  });
+}
+
+// ── Helpers ──
+const AVATAR_COLORS=[['#B5D4F4','#0C447C'],['#CECBF6','#3C3489'],['#9FE1CB','#085041'],['#F5C4B3','#712B13'],['#F4C0D1','#72243E'],['#C0DD97','#27500A'],['#FAC775','#633806'],['#d4e8f0','#1a5570']];
+function getAvatarColor(name){let h=0;for(let c of name)h=((h<<5)-h)+c.charCodeAt(0);return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+function getInitials(name){return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+function showToast(msg,icon='ti-check'){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<i class="ti ${icon}" style="font-size:16px"></i>${msg}`;
+  t.classList.add('show');clearTimeout(t._to);
+  t._to=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── Theme ──
+function applyTheme(){document.documentElement.setAttribute('data-theme',theme);document.getElementById('theme-icon').className=theme==='dark'?'ti ti-sun':'ti ti-moon';}
+function toggleTheme(){theme=theme==='dark'?'light':'dark';localStorage.setItem('sd_theme',theme);applyTheme();}
+
+// ── Filter / sort ──
+function getFiltered(){
+  let list=staff.filter(s=>{
+    const mf=filter==='All'||s.role===filter||(filter==='OnDuty'&&s.duty)||(filter==='OffDuty'&&!s.duty);
+    const q=search.toLowerCase();
+    const ms=!q||s.name.toLowerCase().includes(q)||(s.dept||'').toLowerCase().includes(q)||s.role.toLowerCase().includes(q)||(s.phone||'').includes(q)||(s.whatsapp||'').includes(q)||(s.email||'').toLowerCase().includes(q);
+    return mf&&ms;
+  });
+  if(sort==='duty')list.sort((a,b)=>(b.duty?1:0)-(a.duty?1:0)||(a.name>b.name?1:-1));
+  else if(sort==='role')list.sort((a,b)=>a.role.localeCompare(b.role)||(a.name>b.name?1:-1));
+  else list.sort((a,b)=>a.name.localeCompare(b.name));
+  return list;
+}
+function setFilter(f){
+  filter=f;
+  ['All','Technician','Agent','OnDuty','OffDuty'].forEach(x=>document.getElementById('f-'+x)?.classList.toggle('active',x===f));
+  renderGrid();
+}
+function updateSearch(v){search=v;renderGrid();}
+function updateSort(v){sort=v;renderGrid();}
+
+// ── Stats ──
+function renderStats(){
+  const total=staff.length,techs=staff.filter(s=>s.role==='Technician').length;
+  const agents=staff.filter(s=>s.role==='Agent').length,onDuty=staff.filter(s=>s.duty).length;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card"><div class="stat-dot" style="background:var(--blue)"></div><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat-card"><div class="stat-dot" style="background:var(--blue)"></div><div class="stat-num">${techs}</div><div class="stat-label">Techs</div></div>
+    <div class="stat-card"><div class="stat-dot" style="background:var(--purple-text)"></div><div class="stat-num">${agents}</div><div class="stat-label">Agents</div></div>
+    <div class="stat-card"><div class="stat-dot" style="background:var(--green)"></div><div class="stat-num">${onDuty}</div><div class="stat-label">On Duty</div></div>`;
+}
+
+// ── Grid ──
+function renderGrid(){
+  const list=getFiltered();
+  const grid=document.getElementById('staff-grid');
+  if(!list.length){grid.innerHTML=`<div class="empty"><i class="ti ti-users-off" aria-hidden="true"></i><p>No staff found</p></div>`;return;}
+  grid.innerHTML=list.map(s=>{
+    const [bgC,textC]=getAvatarColor(s.name);
+    const initials=getInitials(s.name);
+    const waNum=(s.whatsapp||'').replace(/[^0-9]/g,'');
+    const waHref=`https://wa.me/94${waNum.replace(/^0/,'')}`;
+    const adminActions=adminUnlocked?`<div class="card-actions"><button class="card-edit-btn" onclick="openEdit('${s.id}')"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button><button class="card-del-btn" onclick="deleteDirect('${s.id}')" title="Remove"><i class="ti ti-trash" aria-hidden="true"></i></button></div>`:'';
+    return `<article class="card${s.duty?'':' off-duty'}" aria-label="${escH(s.name)}">
+      <div class="avatar" style="background:${bgC};color:${textC}">${initials}</div>
+      <div class="card-name">${escH(s.name)}</div>
+      <div class="card-dept">${escH(s.dept||'')}</div>
+      <span class="role-tag ${s.role==='Technician'?'tag-tech':'tag-agent'}"><i class="ti ${s.role==='Technician'?'ti-tool':'ti-headset'}" aria-hidden="true" style="font-size:10px"></i>${s.role}</span>
+      <div class="contact-row"><i class="ti ti-phone" aria-hidden="true"></i><a href="tel:${escH(s.phone)}">${escH(s.phone)}</a></div>
+      ${s.whatsapp?`<div class="contact-row"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="color:var(--green-text)"></i><a class="wa-link" href="${waHref}" target="_blank" rel="noopener">${escH(s.whatsapp)}</a></div>`:''}
+      ${s.email?`<div class="contact-row"><i class="ti ti-mail" aria-hidden="true"></i><a href="mailto:${escH(s.email)}">${escH(s.email)}</a></div>`:''}
+      <div class="card-spacer"></div>
+      <div class="duty-row">
+        <span class="duty-label ${s.duty?'on':'off'}">${s.duty?'On duty':'Off duty'}</span>
+        <label class="toggle-wrap" title="Toggle duty">
+          <input type="checkbox" ${s.duty?'checked':''} onchange="toggleDuty('${s.id}',this.checked)" aria-label="Toggle duty for ${escH(s.name)}" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      ${adminActions}
+    </article>`;
+  }).join('');
+}
+
+function renderAll(){renderStats();renderGrid();}
+
+// ── Duty toggle (anyone can change, synced live via Firestore) ──
+function toggleDuty(id,val){
+  staffCollection.doc(id).update({duty:val})
+    .then(()=>showToast(val?'Marked on duty':'Marked off duty', val?'ti-circle-check':'ti-circle-x'))
+    .catch(e=>{console.error(e);showToast('Failed to update — try again','ti-alert-triangle');});
+}
+
+// ── Admin ──
+function unlockAdmin(){
+  const val=document.getElementById('pin-input').value;
+  const err=document.getElementById('pin-err');
+  if(val===ADMIN_PIN){
+    adminUnlocked=true;
+    const bar=document.getElementById('admin-bar');
+    bar.classList.add('unlocked');
+    bar.innerHTML=`
+      <i class="ti ti-shield-check" style="color:var(--blue-text);font-size:15px" aria-hidden="true"></i>
+      <span style="color:var(--blue-text);font-weight:700">Admin mode</span>
+      <button class="btn btn-sm" onclick="openAdd()" style="margin-left:2px"><i class="ti ti-plus" aria-hidden="true"></i> Add member</button>
+      <button class="btn btn-sm" onclick="lockAdmin()" style="margin-left:auto"><i class="ti ti-lock" aria-hidden="true"></i> Lock</button>`;
+    document.getElementById('fab').classList.add('visible');
+    document.getElementById('fab-label').classList.add('visible');
+    renderGrid();showToast('Admin mode unlocked','ti-shield-check');
+  } else {
+    err.style.display='';
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>{err.style.display='none';},2200);
+  }
+}
+function lockAdmin(){
+  adminUnlocked=false;closePanel();closeDutySheet();
+  const bar=document.getElementById('admin-bar');
+  bar.classList.remove('unlocked');
+  bar.innerHTML=`
+    <i class="ti ti-lock" style="font-size:15px" aria-hidden="true"></i>
+    <span>Admin</span>
+    <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="8" />
+    <button class="btn btn-sm" onclick="unlockAdmin()"><i class="ti ti-key" aria-hidden="true"></i> Unlock</button>
+    <span id="pin-err" style="color:var(--red);font-size:12px;display:none">Wrong PIN</span>`;
+  document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockAdmin();});
+  document.getElementById('fab').classList.remove('visible');
+  document.getElementById('fab-label').classList.remove('visible');
+  renderGrid();showToast('Admin mode locked','ti-lock');
+}
+
+// ── Duty sheet ──
+function openDutySheet(){
+  renderDutyList();
+  document.getElementById('duty-sheet-overlay').classList.add('open');
+}
+function closeDutySheet(){document.getElementById('duty-sheet-overlay').classList.remove('open');}
+function handleDutyOverlay(e){if(e.target===document.getElementById('duty-sheet-overlay'))closeDutySheet();}
+function setDutyTab(t){
+  dutyTab=t;
+  ['All','Technician','Agent'].forEach(x=>document.getElementById('dt-'+x)?.classList.toggle('active',x===t));
+  renderDutyList();
+}
+function renderDutyList(){
+  const list=staff.filter(s=>dutyTab==='All'||s.role===dutyTab).sort((a,b)=>a.name.localeCompare(b.name));
+  const onCount=list.filter(s=>s.duty).length;
+  document.getElementById('duty-list').innerHTML=
+    `<div style="padding:.5rem .5rem .3rem;font-size:12px;color:var(--text2)">${onCount} of ${list.length} on duty</div>`+
+    list.map(s=>{
+      const [bgC,textC]=getAvatarColor(s.name);
+      return `<div class="duty-item">
+        <div class="duty-item-avatar" style="background:${bgC};color:${textC}">${getInitials(s.name)}</div>
+        <div class="duty-item-info">
+          <div class="duty-item-name">${escH(s.name)}</div>
+          <div class="duty-item-role">${escH(s.role)}${s.dept?' · '+escH(s.dept):''}</div>
+        </div>
+        <div class="duty-item-toggle">
+          <label class="toggle-wrap" title="Toggle duty">
+            <input type="checkbox" ${s.duty?'checked':''} onchange="toggleDuty('${s.id}',this.checked)" aria-label="${escH(s.name)} duty" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ── Panel ──
+function openAdd(){
+  editId=null;
+  document.getElementById('panel-title').textContent='Add member';
+  document.getElementById('submit-label').textContent='Add member';
+  document.getElementById('delete-btn').style.display='none';
+  ['f-name','f-dept','f-phone','f-whatsapp','f-email'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('f-role').value='Technician';
+  document.getElementById('form-error').style.display='none';
+  document.getElementById('panel-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-name').focus(),100);
+}
+function openEdit(id){
+  const s=staff.find(x=>x.id===id);if(!s)return;
+  editId=id;
+  document.getElementById('panel-title').textContent='Edit member';
+  document.getElementById('submit-label').textContent='Save changes';
+  document.getElementById('delete-btn').style.display='';
+  document.getElementById('f-name').value=s.name;
+  document.getElementById('f-role').value=s.role;
+  document.getElementById('f-dept').value=s.dept||'';
+  document.getElementById('f-phone').value=s.phone;
+  document.getElementById('f-whatsapp').value=s.whatsapp||'';
+  document.getElementById('f-email').value=s.email||'';
+  document.getElementById('form-error').style.display='none';
+  document.getElementById('panel-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-name').focus(),100);
+}
+function closePanel(){document.getElementById('panel-overlay').classList.remove('open');editId=null;}
+function handlePanelOverlay(e){if(e.target===document.getElementById('panel-overlay'))closePanel();}
+
+function submitForm(){
+  const name=(document.getElementById('f-name').value||'').trim();
+  const role=document.getElementById('f-role').value;
+  const dept=(document.getElementById('f-dept').value||'').trim();
+  const phone=(document.getElementById('f-phone').value||'').trim();
+  const whatsapp=(document.getElementById('f-whatsapp').value||'').trim();
+  const email=(document.getElementById('f-email').value||'').trim();
+  const errEl=document.getElementById('form-error');
+  if(!name){errEl.textContent='Name is required.';errEl.style.display='';return;}
+  if(!phone){errEl.textContent='Phone number is required.';errEl.style.display='';return;}
+  errEl.style.display='none';
+  const data={name,role,dept,phone,whatsapp,email};
+  const targetId=editId;
+  closePanel();
+  if(targetId){
+    staffCollection.doc(targetId).update(data)
+      .then(()=>showToast('Member updated','ti-check'))
+      .catch(e=>{console.error(e);showToast('Failed to save — try again','ti-alert-triangle');});
+  } else {
+    staffCollection.add({...data,duty:true})
+      .then(()=>showToast('Member added','ti-user-plus'))
+      .catch(e=>{console.error(e);showToast('Failed to add — try again','ti-alert-triangle');});
+  }
+}
+function deleteDirect(id){
+  if(!confirm('Remove this staff member from the directory?'))return;
+  staffCollection.doc(id).delete()
+    .then(()=>showToast('Member removed','ti-trash'))
+    .catch(e=>{console.error(e);showToast('Failed to remove — try again','ti-alert-triangle');});
+}
+function deleteCurrentEdit(){if(!editId)return;closeDutySheet();deleteDirect(editId);closePanel();}
+
+// ── Export PDF ──
+async function exportPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const list=getFiltered();const pageW=doc.internal.pageSize.getWidth();const margin=15;let y=margin;
+  doc.setFillColor(24,95,165);doc.rect(0,0,pageW,18,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('Staff Directory',margin,12);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text(`${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}  ·  ${list.length} staff`,pageW-margin,12,{align:'right'});
+  y=26;const cols=[10,55,90,120,150,185];
+  doc.setFillColor(235,240,248);doc.rect(margin,y-5,pageW-margin*2,9,'F');
+  doc.setTextColor(24,95,165);doc.setFont('helvetica','bold');doc.setFontSize(8);
+  ['#','Name','Role','Department','Phone','WhatsApp'].forEach((h,i)=>doc.text(h,margin+cols[i],y));
+  y+=5;
+  list.forEach((s,idx)=>{
+    if(y>270){doc.addPage();y=20;}
+    doc.setFillColor(...(idx%2===0?[255,255,255]:[248,249,252]));
+    doc.rect(margin,y-4,pageW-margin*2,8,'F');
+    doc.setTextColor(s.duty?20:120,s.duty?20:120,s.duty?20:120);
+    doc.setFont('helvetica',s.duty?'normal':'italic');doc.setFontSize(8);
+    [String(idx+1),s.name,s.role,s.dept||'—',s.phone,s.whatsapp||'—'].forEach((val,i)=>{
+      const max=i===1?30:i===3?25:22;
+      doc.text(val.length>max?val.slice(0,max-1)+'…':val,margin+cols[i],y);
+    });
+    if(!s.duty){doc.setTextColor(160,100,50);doc.setFontSize(7);doc.text('off duty',margin+cols[5]+20,y);}
+    y+=8;
+  });
+  doc.setTextColor(150,150,150);doc.setFontSize(7);doc.setFont('helvetica','normal');
+  doc.text('Confidential — Internal use only',margin,290);doc.text('Page 1',pageW-margin,290,{align:'right'});
+  doc.save(`staff-directory-${new Date().toISOString().slice(0,10)}.pdf`);
+  showToast('PDF exported','ti-file-type-pdf');
+}
+
+// ── Keyboard ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closePanel();closeDutySheet();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();document.getElementById('search-input')?.focus();}
+  if(e.key==='Enter'&&document.activeElement?.id==='pin-input')unlockAdmin();
+});
+
+// ── Init ──
+applyTheme();
+initFirestoreData();
+</script>
+</body>
+</html>

@@ -570,7 +570,7 @@ function renderMyStatus(){
     myId=null;
   }
   if(rec){
-    const hidden = localStorage.getItem('sd_mystatus_hidden')==='1';
+    const hidden = sessionStorage.getItem('sd_mystatus_hidden')==='1';
     if(hidden){
       bar.style.display='none';
       banner.style.display='flex';
@@ -613,12 +613,12 @@ function renderMyStatus(){
   }
 }
 function closeMyStatusBar(){
-  localStorage.setItem('sd_mystatus_hidden','1');
+  sessionStorage.setItem('sd_mystatus_hidden','1');
   renderMyStatus();
   showToast('Quick toggle hidden — tap Show to bring it back','ti-eye-off');
 }
 function showMyStatusBar(){
-  localStorage.removeItem('sd_mystatus_hidden');
+  sessionStorage.removeItem('sd_mystatus_hidden');
   renderMyStatus();
 }
 function dismissMyIdPrompt(){
@@ -714,7 +714,7 @@ function renderWhoAmIList(){
 function selectWhoAmI(id){
   localStorage.setItem('sd_my_id', id);
   localStorage.setItem('sd_myid_prompt_dismissed','1');
-  localStorage.removeItem('sd_mystatus_hidden');
+  sessionStorage.removeItem('sd_mystatus_hidden');
   myId=id;
   closeWhoAmI();
   if(!meDedicatedView)renderMyStatus();else renderMyView();
@@ -723,7 +723,7 @@ function selectWhoAmI(id){
 }
 function forgetMe(){
   localStorage.removeItem('sd_my_id');
-  localStorage.removeItem('sd_mystatus_hidden');
+  sessionStorage.removeItem('sd_mystatus_hidden');
   myId=null;
   closeWhoAmI();
   renderMyStatus();

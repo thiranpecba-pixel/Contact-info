@@ -184,6 +184,87 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .duty-filter-tabs{display:flex;gap:6px;padding:.5rem .75rem;border-bottom:0.5px solid var(--border)}
 .duty-tab{padding:5px 12px;font-size:12px;font-weight:500;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
 .duty-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* ── AVAILABILITY SHEET ── */
+.avail-header-meta{font-size:12px;color:var(--text3);font-weight:400;margin-left:6px}
+.avail-summary{display:flex;gap:8px;padding:.6rem .75rem;border-bottom:0.5px solid var(--border);flex-wrap:wrap}
+.avail-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid var(--border)}
+.avail-pill.green{background:var(--green-bg);color:var(--green-text);border-color:rgba(46,125,50,0.2)}
+.avail-pill.blue{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(24,95,165,0.2)}
+.avail-pill.purple{background:var(--purple-bg);color:var(--purple-text);border-color:rgba(83,74,183,0.2)}
+.avail-search-wrap{position:relative;padding:.5rem .75rem;border-bottom:0.5px solid var(--border)}
+.avail-search-wrap input{width:100%;padding:8px 12px 8px 34px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;-webkit-appearance:none}
+.avail-search-wrap input:focus{border-color:var(--blue);background:var(--bg)}
+.avail-search-wrap .si{position:absolute;left:22px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text3);pointer-events:none}
+.avail-item{display:flex;align-items:center;gap:10px;padding:.6rem .5rem;border-bottom:0.5px solid var(--border)}
+.avail-item:last-child{border-bottom:none}
+.avail-item-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;position:relative}
+.avail-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg);background:var(--green)}
+.avail-item-info{flex:1;min-width:0}
+.avail-item-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avail-item-sub{font-size:11px;color:var(--text2)}
+.avail-item-actions{display:flex;gap:5px;flex-shrink:0}
+.avail-action-btn{width:34px;height:34px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;text-decoration:none;touch-action:manipulation;transition:background .15s}
+.avail-action-btn:active{opacity:.75}
+.avail-action-btn.phone{color:var(--blue)}
+.avail-action-btn.wa{color:var(--green-text)}
+.avail-empty{text-align:center;padding:2.5rem 1rem;color:var(--text2)}
+.avail-empty i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
+.avail-empty p{font-size:13px}
+.avail-nav-btn{position:fixed;bottom:1.2rem;left:1.2rem;z-index:90;display:flex;align-items:center;gap:7px;padding:0 18px 0 14px;height:48px;border-radius:24px;background:var(--green);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(46,125,50,0.38);touch-action:manipulation;transition:opacity .15s}
+.avail-nav-btn i{font-size:20px}
+.avail-nav-btn:active{opacity:.85}
+
+
+
+/* ── SHIFT SCHEDULING ── */
+.shift-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.shift-overlay.open{display:flex}
+.shift-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0)}
+.shift-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0}
+.shift-header{padding:.9rem 1.1rem .6rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.shift-title{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.shift-header-actions{display:flex;gap:6px;align-items:center}
+.shift-day-nav{display:flex;align-items:center;gap:0;border-bottom:0.5px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:.5rem .75rem;gap:5px}
+.shift-day-nav::-webkit-scrollbar{display:none}
+.shift-day-btn{padding:5px 11px;font-size:12px;font-weight:600;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;touch-action:manipulation}
+.shift-day-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.shift-day-btn.has-shifts{position:relative}
+.shift-day-btn.has-shifts::after{content:'';position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--green)}
+.shift-body{overflow-y:auto;flex:1;padding:.5rem .75rem .75rem}
+.shift-add-row{display:flex;align-items:center;gap:8px;padding:.6rem .5rem;border-bottom:0.5px solid var(--border);margin-bottom:.3rem}
+.shift-add-select{flex:1;padding:7px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;-webkit-appearance:none}
+.shift-add-select:focus{border-color:var(--blue)}
+.shift-time-input{width:90px;padding:7px 8px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;-webkit-appearance:none}
+.shift-time-input:focus{border-color:var(--blue)}
+.shift-add-btn{padding:7px 13px;font-size:12px;font-weight:600;border-radius:var(--radius);background:var(--blue);color:#fff;border:none;cursor:pointer;white-space:nowrap;touch-action:manipulation}
+.shift-add-btn:active{opacity:.85}
+.shift-item{display:flex;align-items:center;gap:9px;padding:.55rem .5rem;border-bottom:0.5px solid var(--border)}
+.shift-item:last-child{border-bottom:none}
+.shift-item-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;position:relative}
+.shift-status-dot{position:absolute;bottom:0px;right:0px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg)}
+.shift-status-dot.on{background:var(--green)}
+.shift-status-dot.off{background:var(--text3)}
+.shift-status-dot.late{background:var(--red)}
+.shift-item-info{flex:1;min-width:0}
+.shift-item-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shift-item-time{font-size:11px;color:var(--text3);margin-top:1px}
+.shift-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.2px;margin-left:5px}
+.badge-on{background:var(--green-bg);color:var(--green-text)}
+.badge-off{background:var(--gray-bg);color:var(--gray-text)}
+.badge-late{background:var(--red-bg);color:var(--red)}
+.badge-upcoming{background:var(--blue-bg);color:var(--blue-text)}
+.shift-item-del{width:28px;height:28px;border:none;background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;border-radius:6px;flex-shrink:0;touch-action:manipulation}
+.shift-item-del:active{background:var(--red-bg);color:var(--red)}
+.shift-empty{text-align:center;padding:2.5rem 1rem;color:var(--text3)}
+.shift-empty i{font-size:30px;display:block;margin-bottom:8px;opacity:.35}
+.shift-empty p{font-size:13px}
+.shift-summary-bar{display:flex;gap:7px;padding:.55rem .75rem;border-bottom:0.5px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.shift-s-pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px}
+.shift-s-pill.green{background:var(--green-bg);color:var(--green-text)}
+.shift-s-pill.orange{background:#FFF3E0;color:#B75E00}
+.shift-s-pill.gray{background:var(--gray-bg);color:var(--gray-text)}
+[data-theme="dark"] .shift-s-pill.orange{background:#2a1800;color:#FFAB40}
+.shift-card-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:4px}
 
 /* ── SIDE PANEL (edit/add) ── */
 .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;display:none;align-items:flex-end;justify-content:center}
@@ -240,6 +321,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </button>
     <button class="icon-btn" title="Print" onclick="window.print()">
       <i class="ti ti-printer"></i>
+    </button>
+    <button class="icon-btn" title="Search availability" onclick="openAvailSheet()" style="color:var(--green-text)">
+      <i class="ti ti-user-check"></i>
+    </button>
+    <button class="icon-btn" title="Shift schedule" onclick="openShiftSheet()" id="nav-shift-btn">
+      <i class="ti ti-calendar-time"></i>
     </button>
   </div>
 </nav>
@@ -375,6 +462,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- AVAILABILITY SHEET -->
+<button class="avail-nav-btn" id="avail-nav-btn" onclick="openAvailSheet()" title="Who is available now?">
+  <i class="ti ti-user-check"></i> Available Now
+</button>
+
+<div class="duty-sheet-overlay" id="avail-sheet-overlay" onclick="handleAvailOverlay(event)">
+  <div class="duty-sheet" id="avail-sheet" style="max-height:90vh">
+    <div class="duty-sheet-handle"></div>
+    <div class="duty-sheet-header">
+      <span class="duty-sheet-title"><i class="ti ti-user-check" style="vertical-align:-2px;margin-right:5px;color:var(--green-text)" aria-hidden="true"></i>Available Now<span class="avail-header-meta" id="avail-header-meta"></span></span>
+      <button class="icon-btn" onclick="closeAvailSheet()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="avail-summary" id="avail-summary"></div>
+    <div class="duty-filter-tabs">
+      <button class="duty-tab active" id="av-All" onclick="setAvailTab('All')">All</button>
+      <button class="duty-tab" id="av-Technician" onclick="setAvailTab('Technician')">Technicians</button>
+      <button class="duty-tab" id="av-Agent" onclick="setAvailTab('Agent')">Agents</button>
+    </div>
+    <div class="avail-search-wrap">
+      <i class="ti ti-search si" aria-hidden="true"></i>
+      <input type="text" id="avail-search-input" placeholder="Search available staff…" oninput="updateAvailSearch(this.value)" />
+    </div>
+    <div class="duty-list" id="avail-list"></div>
+  </div>
+</div>
+
+
+<!-- SHIFT SCHEDULING SHEET -->
+<div class="shift-overlay" id="shift-overlay" onclick="handleShiftOverlay(event)">
+  <div class="shift-sheet">
+    <div class="shift-handle"></div>
+    <div class="shift-header">
+      <span class="shift-title"><i class="ti ti-calendar-time" style="color:var(--blue);font-size:18px"></i>Shift Schedule</span>
+      <div class="shift-header-actions">
+        <span id="shift-day-label" style="font-size:12px;color:var(--text3);font-weight:500"></span>
+        <button class="icon-btn" onclick="closeShiftSheet()"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div class="shift-summary-bar" id="shift-summary-bar"></div>
+    <div class="shift-day-nav" id="shift-day-nav"></div>
+    <div class="shift-body" id="shift-body"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -446,6 +577,8 @@ async function initFirestoreData(){
     renderAll();
     if(document.getElementById('duty-sheet-overlay').classList.contains('open'))renderDutyList();
     if(document.getElementById('whoami-overlay').classList.contains('open'))renderWhoAmIList();
+    if(document.getElementById('avail-sheet-overlay').classList.contains('open'))renderAvailList();
+    if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftDayNav();renderShiftBody();}
   }, err=>{
     console.error('Firestore snapshot error:',err);
     showToast('Connection lost — check Firebase setup','ti-alert-triangle');
@@ -517,6 +650,7 @@ function renderGrid(){
       <div class="avatar" style="background:${bgC};color:${textC}">${initials}</div>
       <div class="card-name">${escH(s.name)}</div>
       <div class="card-dept">${escH(s.dept||'')}</div>
+      ${getCardShiftBadge(s.id)}
       <span class="role-tag ${s.role==='Technician'?'tag-tech':'tag-agent'}"><i class="ti ${s.role==='Technician'?'ti-tool':'ti-headset'}" aria-hidden="true" style="font-size:10px"></i>${s.role}</span>
       <div class="contact-row"><i class="ti ti-phone" aria-hidden="true"></i><a href="tel:${escH(s.phone)}">${escH(s.phone)}</a></div>
       ${s.whatsapp?`<div class="contact-row"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="color:var(--green-text)"></i><a class="wa-link" href="${waHref}" target="_blank" rel="noopener">${escH(s.whatsapp)}</a></div>`:''}
@@ -914,9 +1048,272 @@ async function exportPDF(){
   showToast('PDF exported','ti-file-type-pdf');
 }
 
+
+// ── Availability Sheet ──
+let availTab = 'All';
+let availSearch = '';
+
+function openAvailSheet(){
+  availSearch = '';
+  const inp = document.getElementById('avail-search-input');
+  if(inp) inp.value = '';
+  renderAvailList();
+  document.getElementById('avail-sheet-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('avail-search-input')?.focus(), 120);
+}
+function closeAvailSheet(){document.getElementById('avail-sheet-overlay').classList.remove('open');}
+function handleAvailOverlay(e){if(e.target===document.getElementById('avail-sheet-overlay'))closeAvailSheet();}
+function setAvailTab(t){
+  availTab=t;
+  ['All','Technician','Agent'].forEach(x=>document.getElementById('av-'+x)?.classList.toggle('active',x===t));
+  renderAvailList();
+}
+function updateAvailSearch(v){availSearch=v;renderAvailList();}
+
+function renderAvailList(){
+  const onDuty = staff.filter(s=>s.duty);
+  const techs  = onDuty.filter(s=>s.role==='Technician').length;
+  const agents  = onDuty.filter(s=>s.role==='Agent').length;
+
+  // Summary pills
+  document.getElementById('avail-header-meta').textContent = onDuty.length ? ` · ${onDuty.length} on duty` : '';
+  document.getElementById('avail-summary').innerHTML =
+    `<div class="avail-pill green"><i class="ti ti-circle-check" style="font-size:13px"></i>${onDuty.length} On Duty</div>` +
+    `<div class="avail-pill blue"><i class="ti ti-tool" style="font-size:13px"></i>${techs} Tech${techs!==1?'s':''}</div>` +
+    `<div class="avail-pill purple"><i class="ti ti-headset" style="font-size:13px"></i>${agents} Agent${agents!==1?'s':''}</div>`;
+
+  // Filtered list
+  const q = availSearch.toLowerCase();
+  let list = onDuty
+    .filter(s => availTab==='All' || s.role===availTab)
+    .filter(s => !q ||
+      s.name.toLowerCase().includes(q) ||
+      (s.dept||'').toLowerCase().includes(q) ||
+      (s.phone||'').includes(q) ||
+      (s.whatsapp||'').includes(q)
+    )
+    .sort((a,b)=>a.name.localeCompare(b.name));
+
+  const el = document.getElementById('avail-list');
+  if(!list.length){
+    el.innerHTML = `<div class="avail-empty"><i class="ti ti-user-off" aria-hidden="true"></i><p>${q||availTab!=='All' ? 'No matching staff on duty' : 'Nobody is on duty right now'}</p></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(s=>{
+    const [bgC,textC] = getAvatarColor(s.name);
+    const waNum = (s.whatsapp||'').replace(/[^0-9]/g,'');
+    const waHref = `https://wa.me/94${waNum.replace(/^0/,'')}`;
+    const phoneBtn = s.phone
+      ? `<a class="avail-action-btn phone" href="tel:${escH(s.phone)}" title="Call ${escH(s.name)}"><i class="ti ti-phone"></i></a>` : '';
+    const waBtn = s.whatsapp
+      ? `<a class="avail-action-btn wa" href="${waHref}" target="_blank" rel="noopener" title="WhatsApp ${escH(s.name)}"><i class="ti ti-brand-whatsapp"></i></a>` : '';
+    return `<div class="avail-item">
+      <div class="avail-item-avatar" style="background:${bgC};color:${textC}">
+        ${getInitials(s.name)}
+        <span class="avail-dot"></span>
+      </div>
+      <div class="avail-item-info">
+        <div class="avail-item-name">${escH(s.name)}</div>
+        <div class="avail-item-sub">${escH(s.role)}${s.dept?' · '+escH(s.dept):''}</div>
+      </div>
+      <div class="avail-item-actions">${phoneBtn}${waBtn}</div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── Shift Scheduling ──
+const shiftsCollection = db.collection('shifts');
+let shifts = {}; // { 'YYYY-MM-DD': [ {id,staffId,start,end}, … ] }
+let shiftDay = todayKey();
+let shiftUnsubscribe = null;
+
+function todayKey(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function dayKey(offset){
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0,10);
+}
+function fmtDayLabel(key){
+  const d = new Date(key + 'T00:00:00');
+  const today = todayKey();
+  const tomorrow = dayKey(1);
+  if(key === today) return 'Today';
+  if(key === tomorrow) return 'Tomorrow';
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+function fmtTime(t){ // "08:00" → "8:00 AM"
+  if(!t) return '';
+  const [h,m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h%12||12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+function shiftStatusFor(s, key){
+  // s = staff record, key = date string
+  const dayShifts = (shifts[key]||[]).filter(rec=>rec.staffId===s.id);
+  if(!dayShifts.length) return null;
+  const shRec = dayShifts[0];
+  const now = new Date();
+  const keyToday = todayKey();
+  if(key !== keyToday) return {sh: shRec, status: key < keyToday ? 'done' : 'upcoming'};
+  const [startH, startM] = shRec.start.split(':').map(Number);
+  const [endH,   endM]   = shRec.end.split(':').map(Number);
+  const startMin = startH*60+startM;
+  const endMin   = endH*60+endM;
+  const nowMin   = now.getHours()*60+now.getMinutes();
+  if(nowMin < startMin - 15) return {sh: shRec, status:'upcoming'};
+  if(nowMin > endMin) return {sh: shRec, status: s.duty ? 'on' : 'done'};
+  if(s.duty) return {sh: shRec, status:'on'};
+  return {sh: shRec, status:'late'}; // scheduled but not checked in
+}
+
+function getCardShiftBadge(staffId){
+  const today = todayKey();
+  const dayShifts = (shifts[today]||[]).filter(sh=>sh.staffId===staffId);
+  if(!dayShifts.length) return '';
+  const sh = dayShifts[0];
+  return `<span class="shift-card-badge badge-upcoming" style="font-size:9px"><i class="ti ti-clock" style="font-size:9px"></i>${fmtTime(sh.start)}–${fmtTime(sh.end)}</span>`;
+}
+
+function initShifts(){
+  // Listen to shifts collection real-time
+  shiftUnsubscribe = shiftsCollection.onSnapshot(snap=>{
+    shifts = {};
+    snap.docs.forEach(d=>{
+      const data = d.data();
+      if(!shifts[data.date]) shifts[data.date]=[];
+      shifts[data.date].push({id:d.id,...data});
+    });
+    renderGrid(); // update card badges
+    if(document.getElementById('shift-overlay').classList.contains('open')) renderShiftBody();
+    renderShiftSummaryBar();
+  }, err=>console.error('Shifts snapshot error:',err));
+}
+
+function openShiftSheet(){
+  shiftDay = todayKey();
+  renderShiftDayNav();
+  renderShiftSummaryBar();
+  renderShiftBody();
+  document.getElementById('shift-overlay').classList.add('open');
+}
+function closeShiftSheet(){document.getElementById('shift-overlay').classList.remove('open');}
+function handleShiftOverlay(e){if(e.target===document.getElementById('shift-overlay'))closeShiftSheet();}
+
+function renderShiftDayNav(){
+  const nav = document.getElementById('shift-day-nav');
+  // Show 7 days: yesterday, today, +5
+  const days = [-1,0,1,2,3,4,5].map(i=>dayKey(i));
+  nav.innerHTML = days.map(k=>{
+    const hasShifts = (shifts[k]||[]).length > 0;
+    return `<button class="shift-day-btn${k===shiftDay?' active':''}${hasShifts?' has-shifts':''}" onclick="selectShiftDay('${k}')">${fmtDayLabel(k)}</button>`;
+  }).join('');
+  document.getElementById('shift-day-label').textContent = fmtDayLabel(shiftDay);
+}
+
+function selectShiftDay(key){
+  shiftDay = key;
+  renderShiftDayNav();
+  renderShiftBody();
+}
+
+function renderShiftSummaryBar(){
+  const today = todayKey();
+  const todayShifts = shifts[today]||[];
+  const scheduled = todayShifts.length;
+  const onDuty = staff.filter(s=>s.duty).length;
+  const late = todayShifts.filter(sh=>{
+    const s = staff.find(x=>x.id===sh.staffId);
+    if(!s) return false;
+    const r = shiftStatusFor(s, today);
+    return r && r.status==='late';
+  }).length;
+  const bar = document.getElementById('shift-summary-bar');
+  if(!bar) return;
+  bar.innerHTML =
+    `<span class="shift-s-pill green"><i class="ti ti-circle-check" style="font-size:12px"></i>${onDuty} On Duty</span>` +
+    `<span class="shift-s-pill gray"><i class="ti ti-calendar" style="font-size:12px"></i>${scheduled} Scheduled Today</span>` +
+    (late ? `<span class="shift-s-pill orange"><i class="ti ti-alert-triangle" style="font-size:12px"></i>${late} Late</span>` : '');
+}
+
+function renderShiftBody(){
+  const body = document.getElementById('shift-body');
+  const isAdmin = adminUnlocked;
+  const dayShifts = shifts[shiftDay]||[];
+
+  // Add-shift row (admin only)
+  const addRow = isAdmin ? `
+    <div class="shift-add-row">
+      <select class="shift-add-select" id="sh-staff-sel">
+        <option value="">— Pick staff —</option>
+        ${[...staff].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`<option value="${escH(s.id)}">${escH(s.name)}</option>`).join('')}
+      </select>
+      <input class="shift-time-input" type="time" id="sh-start" value="08:00" />
+      <input class="shift-time-input" type="time" id="sh-end" value="17:00" />
+      <button class="shift-add-btn" onclick="addShift()"><i class="ti ti-plus"></i> Add</button>
+    </div>` : '';
+
+  if(!dayShifts.length){
+    body.innerHTML = addRow + `<div class="shift-empty"><i class="ti ti-calendar-off"></i><p>No shifts scheduled for ${fmtDayLabel(shiftDay)}</p>${isAdmin?'<p style="font-size:11px;margin-top:4px;opacity:.6">Use the form above to add shifts</p>':''}</div>`;
+    return;
+  }
+
+  const sorted = [...dayShifts].sort((a,b)=>a.start.localeCompare(b.start));
+  const rows = sorted.map(sh=>{
+    const s = staff.find(x=>x.id===sh.staffId);
+    if(!s) return '';
+    const [bgC,textC] = getAvatarColor(s.name);
+    const result = shiftStatusFor(s, shiftDay);
+    const status = result ? result.status : 'upcoming';
+    const badgeMap = {on:'badge-on',late:'badge-late',upcoming:'badge-upcoming',done:'badge-off',};
+    const labelMap = {on:'On Duty',late:'Late / Not checked in',upcoming:'Upcoming',done:'Done',};
+    const dotClass = status==='on'?'on':status==='late'?'late':'off';
+    const delBtn = isAdmin ? `<button class="shift-item-del" onclick="deleteShift('${sh.id}')" title="Remove shift"><i class="ti ti-trash"></i></button>` : '';
+    return `<div class="shift-item">
+      <div class="shift-item-avatar" style="background:${bgC};color:${textC}">
+        ${getInitials(s.name)}
+        <span class="shift-status-dot ${dotClass}"></span>
+      </div>
+      <div class="shift-item-info">
+        <div class="shift-item-name">${escH(s.name)} <span class="shift-badge ${badgeMap[status]||'badge-off'}">${labelMap[status]||status}</span></div>
+        <div class="shift-item-time"><i class="ti ti-clock" style="font-size:10px;vertical-align:-1px"></i> ${fmtTime(sh.start)} – ${fmtTime(sh.end)} &nbsp;·&nbsp; ${escH(s.role)}${s.dept?' · '+escH(s.dept):''}</div>
+      </div>
+      ${delBtn}
+    </div>`;
+  }).join('');
+
+  body.innerHTML = addRow + rows;
+}
+
+function addShift(){
+  const staffId = document.getElementById('sh-staff-sel').value;
+  const start   = document.getElementById('sh-start').value;
+  const end     = document.getElementById('sh-end').value;
+  if(!staffId){showToast('Pick a staff member first','ti-alert-triangle');return;}
+  if(!start||!end){showToast('Set start and end times','ti-alert-triangle');return;}
+  if(start>=end){showToast('End time must be after start','ti-alert-triangle');return;}
+  // Prevent duplicate on same day
+  const existing = (shifts[shiftDay]||[]).find(sh=>sh.staffId===staffId);
+  if(existing){showToast('That person already has a shift this day','ti-alert-triangle');return;}
+  shiftsCollection.add({staffId, date:shiftDay, start, end})
+    .then(()=>showToast('Shift added','ti-calendar-plus'))
+    .catch(e=>{console.error(e);showToast('Failed to add shift','ti-alert-triangle');});
+}
+
+function deleteShift(id){
+  if(!confirm('Remove this shift?')) return;
+  shiftsCollection.doc(id).delete()
+    .then(()=>showToast('Shift removed','ti-trash'))
+    .catch(e=>{console.error(e);showToast('Failed to remove shift','ti-alert-triangle');});
+}
+
 // ── Keyboard ──
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closePanel();closeDutySheet();closeWhoAmI();}
+  if(e.key==='Escape'){closePanel();closeDutySheet();closeWhoAmI();closeAvailSheet();closeShiftSheet();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();document.getElementById('search-input')?.focus();}
   if(e.key==='Enter'&&document.activeElement?.id==='pin-input')unlockAdmin();
 });
@@ -925,6 +1322,7 @@ document.addEventListener('keydown',e=>{
 applyTheme();
 initMyStatus();
 initFirestoreData();
+initShifts();
 </script>
 </body>
 </html>

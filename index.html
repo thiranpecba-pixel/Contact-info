@@ -244,13 +244,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </nav>
 
-<!-- MY STATUS: quick-toggle setup prompt (shown until set up or dismissed) -->
-<div class="myid-banner" id="myid-banner" style="display:none">
-  <i class="ti ti-bolt" aria-hidden="true"></i>
-  <span>Set up your quick toggle to flip your own duty status in one tap, with no scrolling.</span>
-  <button class="btn btn-sm" onclick="openWhoAmI()">Set up</button>
-  <button class="icon-btn" onclick="dismissMyIdPrompt()" title="Dismiss"><i class="ti ti-x"></i></button>
-</div>
+<!-- MY STATUS: setup / re-show prompt (content is rendered by JS) -->
+<div class="myid-banner" id="myid-banner" style="display:none"></div>
 
 <!-- MY STATUS: sticky personal toggle (shown once you're identified) -->
 <div class="mystatus-bar" id="mystatus-bar" style="display:none"></div>
@@ -575,6 +570,16 @@ function renderMyStatus(){
     myId=null;
   }
   if(rec){
+    const hidden = localStorage.getItem('sd_mystatus_hidden')==='1';
+    if(hidden){
+      bar.style.display='none';
+      banner.style.display='flex';
+      banner.innerHTML=`
+        <i class="ti ti-toggle-right" aria-hidden="true"></i>
+        <span>Your quick toggle bar is hidden.</span>
+        <button class="btn btn-sm" onclick="showMyStatusBar()">Show</button>`;
+      return;
+    }
     banner.style.display='none';
     bar.style.display='flex';
     const [bgC,textC]=getAvatarColor(rec.name);
@@ -591,11 +596,30 @@ function renderMyStatus(){
         </label>
         <button class="icon-btn" onclick="copyMyLink()" title="Copy my personal link"><i class="ti ti-link"></i></button>
         <button class="icon-btn" onclick="openWhoAmI()" title="Not you? Switch"><i class="ti ti-switch-horizontal"></i></button>
+        <button class="icon-btn" onclick="closeMyStatusBar()" title="Hide this bar"><i class="ti ti-x"></i></button>
       </div>`;
   } else {
     bar.style.display='none';
-    banner.style.display = localStorage.getItem('sd_myid_prompt_dismissed')==='1' ? 'none' : 'flex';
+    if(localStorage.getItem('sd_myid_prompt_dismissed')==='1'){
+      banner.style.display='none';
+    } else {
+      banner.style.display='flex';
+      banner.innerHTML=`
+        <i class="ti ti-bolt" aria-hidden="true"></i>
+        <span>Set up your quick toggle to flip your own duty status in one tap, with no scrolling.</span>
+        <button class="btn btn-sm" onclick="openWhoAmI()">Set up</button>
+        <button class="icon-btn" onclick="dismissMyIdPrompt()" title="Dismiss"><i class="ti ti-x"></i></button>`;
+    }
   }
+}
+function closeMyStatusBar(){
+  localStorage.setItem('sd_mystatus_hidden','1');
+  renderMyStatus();
+  showToast('Quick toggle hidden — tap Show to bring it back','ti-eye-off');
+}
+function showMyStatusBar(){
+  localStorage.removeItem('sd_mystatus_hidden');
+  renderMyStatus();
 }
 function dismissMyIdPrompt(){
   localStorage.setItem('sd_myid_prompt_dismissed','1');
@@ -690,6 +714,7 @@ function renderWhoAmIList(){
 function selectWhoAmI(id){
   localStorage.setItem('sd_my_id', id);
   localStorage.setItem('sd_myid_prompt_dismissed','1');
+  localStorage.removeItem('sd_mystatus_hidden');
   myId=id;
   closeWhoAmI();
   if(!meDedicatedView)renderMyStatus();else renderMyView();
@@ -698,6 +723,7 @@ function selectWhoAmI(id){
 }
 function forgetMe(){
   localStorage.removeItem('sd_my_id');
+  localStorage.removeItem('sd_mystatus_hidden');
   myId=null;
   closeWhoAmI();
   renderMyStatus();

@@ -1,7 +1,7 @@
 {
   "name": "CBA Staff Directory",
-  "short_name": "CBA",
-  "description": "CBA Staff Directory",
+  "short_name": "CBA Staff Directory",
+  "description": "Internal staff directory for CBA employees. Quickly search staff members, view contact information, check availability, manage duty status, and access shift schedules from any device."",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

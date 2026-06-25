@@ -285,6 +285,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;padding-bottom:4px}
 .panel-actions .btn{flex:1;justify-content:center;min-width:80px;padding:11px 10px;font-size:14px}
 
+
+/* ── PIN DIALOG ── */
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.pin-overlay.open{display:flex}
+.pin-dialog{background:var(--bg);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;max-width:300px;overflow:hidden;animation:pinPop .18s ease}
+@keyframes pinPop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.pin-dialog-head{padding:1.1rem 1.2rem .6rem;text-align:center}
+.pin-dialog-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin:0 auto .6rem;border:0.5px solid var(--border)}
+.pin-dialog-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
+.pin-dialog-sub{font-size:12px;color:var(--text3)}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin:1rem 0 .3rem}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--border2);transition:background .15s,border-color .15s}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-err-msg{font-size:11.5px;color:var(--red);text-align:center;height:16px;margin-bottom:.2rem;transition:opacity .2s}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:0.5px solid var(--border)}
+.pin-key{padding:1rem .5rem;font-size:20px;font-weight:600;color:var(--text);background:transparent;border:none;border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border);cursor:pointer;touch-action:manipulation;transition:background .12s;-webkit-tap-highlight-color:transparent}
+.pin-key:nth-child(3n){border-right:none}
+.pin-key:nth-last-child(-n+3){border-bottom:none}
+.pin-key:active{background:var(--bg3)}
+.pin-key.del{font-size:17px;color:var(--text2)}
+.pin-key.cancel-key{font-size:13px;font-weight:500;color:var(--text2)}
+.pin-lock-icon{font-size:13px;color:var(--text3);margin-right:4px;vertical-align:-1px}
+
 /* ── EMPTY ── */
 .empty{text-align:center;padding:3rem 1rem;color:var(--text2);grid-column:1/-1}
 .empty i{font-size:36px;display:block;margin-bottom:8px;opacity:.4}
@@ -452,6 +476,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <label>Email</label>
         <input type="email" id="f-email" placeholder="e.g. name@company.com" autocomplete="off" />
       </div>
+      <div class="form-group">
+        <label><i class="ti ti-lock" style="font-size:11px;vertical-align:-1px;margin-right:2px"></i>Personal PIN <span style="font-weight:400;color:var(--text3)">(4 digits — protects duty toggle)</span></label>
+        <input type="password" id="f-pin" placeholder="Set a 4-digit PIN" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password" />
+      </div>
       <div class="panel-actions">
         <button class="btn btn-primary" onclick="submitForm()"><i class="ti ti-check" aria-hidden="true"></i> <span id="submit-label">Add member</span></button>
         <button class="btn" id="copylink-btn" style="display:none;flex:0 0 auto;min-width:unset;padding:11px 14px" onclick="copyPersonLink(editId)" title="Copy this person's personal duty-toggle link"><i class="ti ti-link" aria-hidden="true"></i></button>
@@ -503,6 +531,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="shift-summary-bar" id="shift-summary-bar"></div>
     <div class="shift-day-nav" id="shift-day-nav"></div>
     <div class="shift-body" id="shift-body"></div>
+  </div>
+</div>
+
+
+<!-- PIN DIALOG -->
+<div class="pin-overlay" id="pin-overlay" onclick="handlePinOverlayClick(event)">
+  <div class="pin-dialog" id="pin-dialog">
+    <div class="pin-dialog-head">
+      <div class="pin-dialog-avatar" id="pin-dialog-avatar"></div>
+      <div class="pin-dialog-name" id="pin-dialog-name"></div>
+      <div class="pin-dialog-sub" id="pin-dialog-sub"></div>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-err-msg" id="pin-err-msg"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key cancel-key" onclick="closePinDialog()">Cancel</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinBackspace()"><i class="ti ti-backspace"></i></button>
+    </div>
   </div>
 </div>
 
@@ -657,8 +718,8 @@ function renderGrid(){
       ${s.email?`<div class="contact-row"><i class="ti ti-mail" aria-hidden="true"></i><a href="mailto:${escH(s.email)}">${escH(s.email)}</a></div>`:''}
       <div class="card-spacer"></div>
       <div class="duty-row">
-        <span class="duty-label ${s.duty?'on':'off'}">${s.duty?'On duty':'Off duty'}</span>
-        <label class="toggle-wrap" title="Toggle duty">
+        <span class="duty-label ${s.duty?'on':'off'}">${s.duty?'On duty':'Off duty'}${(!adminUnlocked&&s.id!==myId)?`<i class="ti ti-lock" style="font-size:9px;opacity:.45;margin-left:4px;vertical-align:1px" aria-hidden="true" title="${s.pin?'PIN set':'No PIN — admin PIN required'}"></i>`:''}</span>
+        <label class="toggle-wrap" title="${(!adminUnlocked&&s.id!==myId)?'PIN required to change':'Toggle duty'}">
           <input type="checkbox" ${s.duty?'checked':''} onchange="toggleDuty('${s.id}',this.checked)" aria-label="Toggle duty for ${escH(s.name)}" />
           <span class="toggle-track"></span>
         </label>
@@ -870,11 +931,98 @@ function forgetMe(){
   showToast('Quick toggle cleared','ti-x');
 }
 
-// ── Duty toggle (anyone can change, synced live via Firestore) ──
-function toggleDuty(id,val){
+// ── Duty toggle ──
+// Direct commit (used after PIN verified, by "My Status" bar, and myview)
+function commitToggleDuty(id, val){
   staffCollection.doc(id).update({duty:val})
     .then(()=>showToast(val?'Marked on duty':'Marked off duty', val?'ti-circle-check':'ti-circle-x'))
     .catch(e=>{console.error(e);showToast('Failed to update — try again','ti-alert-triangle');});
+}
+
+// Gate: called from card toggles. Own card = no PIN. Others = PIN required (unless admin).
+function toggleDuty(id, val){
+  if(adminUnlocked || id === myId){
+    commitToggleDuty(id, val);
+  } else {
+    // Revert the checkbox visually — we'll do the actual change after PIN
+    renderGrid();
+    openPinDialog(id, val);
+  }
+}
+
+// ── PIN dialog ──
+let pinState = { staffId: null, newVal: null, entered: '' };
+
+function openPinDialog(staffId, newVal){
+  const s = staff.find(x => x.id === staffId);
+  if(!s) return;
+  const [bgC, textC] = getAvatarColor(s.name);
+  document.getElementById('pin-dialog-avatar').style.cssText = `background:${bgC};color:${textC}`;
+  document.getElementById('pin-dialog-avatar').textContent = getInitials(s.name);
+  document.getElementById('pin-dialog-name').textContent = s.name;
+  const hasPIN = !!(s.pin);
+  document.getElementById('pin-dialog-sub').innerHTML =
+    `<i class="pin-lock-icon ti ti-lock"></i>Enter ${hasPIN ? s.name.split(' ')[0]+"'s PIN" : 'admin PIN'} to ${newVal ? 'mark on duty' : 'mark off duty'}`;
+  pinState = { staffId, newVal, entered: '' };
+  updatePinDots();
+  document.getElementById('pin-err-msg').textContent = '';
+  document.getElementById('pin-overlay').classList.add('open');
+}
+
+function closePinDialog(){
+  document.getElementById('pin-overlay').classList.remove('open');
+  pinState = { staffId: null, newVal: null, entered: '' };
+}
+
+function handlePinOverlayClick(e){
+  if(e.target === document.getElementById('pin-overlay')) closePinDialog();
+}
+
+function updatePinDots(){
+  for(let i = 0; i < 4; i++){
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < pinState.entered.length);
+    dot.classList.remove('error');
+  }
+}
+
+function pinKey(digit){
+  if(pinState.entered.length >= 4) return;
+  pinState.entered += digit;
+  updatePinDots();
+  if(pinState.entered.length === 4) pinSubmit();
+}
+
+function pinBackspace(){
+  if(!pinState.entered.length) return;
+  pinState.entered = pinState.entered.slice(0, -1);
+  updatePinDots();
+}
+
+function pinSubmit(){
+  const target = staff.find(x => x.id === pinState.staffId);
+  const userPin = target && target.pin ? target.pin : null;
+  // Accept: the staff member's own PIN, OR the admin PIN as master override
+  const correct = (userPin && pinState.entered === userPin) || pinState.entered === ADMIN_PIN;
+  if(correct){
+    // Capture values BEFORE closePinDialog() wipes pinState
+    const sid = pinState.staffId;
+    const val = pinState.newVal;
+    closePinDialog();
+    commitToggleDuty(sid, val);
+  } else {
+    // Flash dots red, clear after short delay
+    for(let i = 0; i < 4; i++) document.getElementById('pd' + i).classList.add('error');
+    const noPin = !userPin;
+    document.getElementById('pin-err-msg').textContent = noPin
+      ? 'Incorrect admin PIN — try again'
+      : 'Incorrect PIN — try again';
+    setTimeout(()=>{
+      pinState.entered = '';
+      updatePinDots();
+      document.getElementById('pin-err-msg').textContent = '';
+    }, 900);
+  }
 }
 
 // ── Admin ──
@@ -957,7 +1105,7 @@ function openAdd(){
   document.getElementById('submit-label').textContent='Add member';
   document.getElementById('delete-btn').style.display='none';
   document.getElementById('copylink-btn').style.display='none';
-  ['f-name','f-dept','f-phone','f-whatsapp','f-email'].forEach(id=>{document.getElementById(id).value='';});
+  ['f-name','f-dept','f-phone','f-whatsapp','f-email','f-pin'].forEach(id=>{document.getElementById(id).value='';});
   document.getElementById('f-role').value='Technician';
   document.getElementById('form-error').style.display='none';
   document.getElementById('panel-overlay').classList.add('open');
@@ -976,8 +1124,12 @@ function openEdit(id){
   document.getElementById('f-phone').value=s.phone;
   document.getElementById('f-whatsapp').value=s.whatsapp||'';
   document.getElementById('f-email').value=s.email||'';
+  document.getElementById('f-pin').value=s.pin||'';
   document.getElementById('form-error').style.display='none';
   document.getElementById('panel-overlay').classList.add('open');
+  // Update PIN field placeholder to reflect whether a PIN is already set
+  const pinFld = document.getElementById('f-pin');
+  if(pinFld) pinFld.placeholder = s.pin ? 'PIN is set (edit to change)' : 'No PIN yet — enter to set';
   setTimeout(()=>document.getElementById('f-name').focus(),100);
 }
 function closePanel(){document.getElementById('panel-overlay').classList.remove('open');editId=null;}
@@ -990,11 +1142,13 @@ function submitForm(){
   const phone=(document.getElementById('f-phone').value||'').trim();
   const whatsapp=(document.getElementById('f-whatsapp').value||'').trim();
   const email=(document.getElementById('f-email').value||'').trim();
+  const pin=(document.getElementById('f-pin').value||'').trim();
   const errEl=document.getElementById('form-error');
   if(!name){errEl.textContent='Name is required.';errEl.style.display='';return;}
   if(!phone){errEl.textContent='Phone number is required.';errEl.style.display='';return;}
+  if(pin && !/^[0-9]{4}$/.test(pin)){errEl.textContent='PIN must be exactly 4 digits.';errEl.style.display='';return;}
   errEl.style.display='none';
-  const data={name,role,dept,phone,whatsapp,email};
+  const data={name,role,dept,phone,whatsapp,email,pin};
   const targetId=editId;
   closePanel();
   if(targetId){
@@ -1313,7 +1467,7 @@ function deleteShift(id){
 
 // ── Keyboard ──
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closePanel();closeDutySheet();closeWhoAmI();closeAvailSheet();closeShiftSheet();}
+  if(e.key==='Escape'){closePanel();closeDutySheet();closeWhoAmI();closeAvailSheet();closeShiftSheet();closePinDialog();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();document.getElementById('search-input')?.focus();}
   if(e.key==='Enter'&&document.activeElement?.id==='pin-input')unlockAdmin();
 });

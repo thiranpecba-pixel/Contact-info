@@ -550,6 +550,8 @@ function renderAll(){
 
 // ── My Status (personal quick toggle) ──
 function initMyStatus(){
+  // Clear any stale sd_mystatus_hidden left in localStorage by the old version
+  localStorage.removeItem('sd_mystatus_hidden');
   const meParam=new URLSearchParams(location.search).get('me');
   if(meParam){
     myId=meParam;
@@ -557,6 +559,10 @@ function initMyStatus(){
     localStorage.setItem('sd_my_id', meParam);
   } else {
     myId=localStorage.getItem('sd_my_id');
+  }
+  // If no identity is saved, always show the setup banner (never permanently hide it)
+  if(!myId){
+    localStorage.removeItem('sd_myid_prompt_dismissed');
   }
 }
 function getMyRecord(){return myId ? (staff.find(s=>s.id===myId)||null) : null;}

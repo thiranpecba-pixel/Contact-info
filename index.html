@@ -1311,22 +1311,48 @@ function getCardShiftBadge(staffId){
   return `<span class="shift-card-badge badge-upcoming" style="font-size:9px"><i class="ti ti-clock" style="font-size:9px"></i>${fmtTime(sh.start)}–${fmtTime(sh.end)}</span>`;
 }
 
+// ── Shifts: localStorage fallback key ──
+const SHIFTS_LS_KEY = 'sd_shifts_local';
+
+function shiftsUseLocal(){ return !!shiftsLocalMode; }
+let shiftsLocalMode = false;
+
+function loadShiftsFromLocal(){
+  try{ return JSON.parse(localStorage.getItem(SHIFTS_LS_KEY)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveShiftsToLocal(data){ localStorage.setItem(SHIFTS_LS_KEY, JSON.stringify(data)); }
+
+function applyShiftsData(data){
+  shifts = data;
+  renderGrid();
+  if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+}
+
 function initShifts(){
-  // Listen to shifts collection real-time
+  // Try Firestore first; fall back to localStorage on permission errors
   shiftUnsubscribe = shiftsCollection.onSnapshot(snap=>{
+    shiftsLocalMode = false;
     shiftLoadError = null;
-    shifts = {};
+    const data = {};
     snap.docs.forEach(d=>{
-      const data = d.data();
-      if(!shifts[data.date]) shifts[data.date]=[];
-      shifts[data.date].push({id:d.id,...data});
+      const rec = d.data();
+      if(!data[rec.date]) data[rec.date]=[];
+      data[rec.date].push({id:d.id,...rec});
     });
-    renderGrid(); // update card badges
-    if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+    applyShiftsData(data);
   }, err=>{
     console.error('Shifts snapshot error:',err);
-    shiftLoadError = err;
-    if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+    const isPermission = (err.code==='permission-denied'||err.message?.includes('permission'));
+    if(isPermission){
+      // Silently fall back to localStorage
+      shiftsLocalMode = true;
+      shiftLoadError = null;
+      applyShiftsData(loadShiftsFromLocal());
+    } else {
+      shiftLoadError = err;
+      if(document.getElementById('shift-overlay').classList.contains('open')){renderShiftBody();renderShiftSummaryBar();}
+    }
   });
 }
 
@@ -1385,6 +1411,11 @@ function renderShiftBody(){
     return;
   }
 
+  // Show a subtle notice when running in local-storage fallback mode
+  const localBanner = shiftsLocalMode
+    ? `<div style="margin:.4rem 0 .6rem;padding:7px 11px;background:var(--blue-bg);border:0.5px solid rgba(24,95,165,0.2);border-radius:var(--radius);font-size:11.5px;color:var(--blue-text);display:flex;align-items:center;gap:7px"><i class="ti ti-device-floppy" style="font-size:14px;flex-shrink:0"></i>Shifts are saved on this device (Firestore access is restricted). Data is available on this browser only.</div>`
+    : '';
+
   const dayShifts = shifts[shiftDay]||[];
 
   // Add-shift row (admin only)
@@ -1400,7 +1431,7 @@ function renderShiftBody(){
     </div>` : '';
 
   if(!dayShifts.length){
-    body.innerHTML = addRow + `<div class="shift-empty"><i class="ti ti-calendar-off"></i><p>No shifts scheduled for ${fmtDayLabel(shiftDay)}</p>${isAdmin?'<p style="font-size:11px;margin-top:4px;opacity:.6">Use the form above to add shifts</p>':''}</div>`;
+    body.innerHTML = localBanner + addRow + `<div class="shift-empty"><i class="ti ti-calendar-off"></i><p>No shifts scheduled for ${fmtDayLabel(shiftDay)}</p>${isAdmin?'<p style="font-size:11px;margin-top:4px;opacity:.6">Use the form above to add shifts</p>':''}</div>`;
     return;
   }
 
@@ -1428,7 +1459,7 @@ function renderShiftBody(){
     </div>`;
   }).join('');
 
-  body.innerHTML = addRow + rows;
+  body.innerHTML = localBanner + addRow + rows;
 }
 
 function addShift(){
@@ -1441,16 +1472,38 @@ function addShift(){
   // Prevent duplicate on same day
   const existing = (shifts[shiftDay]||[]).find(sh=>sh.staffId===staffId);
   if(existing){showToast('That person already has a shift this day','ti-alert-triangle');return;}
-  shiftsCollection.add({staffId, date:shiftDay, start, end})
-    .then(()=>showToast('Shift added','ti-calendar-plus'))
-    .catch(e=>{console.error(e);showToast('Failed to add shift','ti-alert-triangle');});
+  if(shiftsLocalMode){
+    // Save locally when Firestore is unavailable
+    const newShift = {id:'local_'+Date.now().toString(36), staffId, date:shiftDay, start, end};
+    const local = loadShiftsFromLocal();
+    if(!local[shiftDay]) local[shiftDay]=[];
+    local[shiftDay].push(newShift);
+    saveShiftsToLocal(local);
+    applyShiftsData(local);
+    showToast('Shift added (saved locally)','ti-calendar-plus');
+  } else {
+    shiftsCollection.add({staffId, date:shiftDay, start, end})
+      .then(()=>showToast('Shift added','ti-calendar-plus'))
+      .catch(e=>{console.error(e);showToast('Failed to add shift','ti-alert-triangle');});
+  }
 }
 
 function deleteShift(id){
   if(!confirm('Remove this shift?')) return;
-  shiftsCollection.doc(id).delete()
-    .then(()=>showToast('Shift removed','ti-trash'))
-    .catch(e=>{console.error(e);showToast('Failed to remove shift','ti-alert-triangle');});
+  if(shiftsLocalMode){
+    const local = loadShiftsFromLocal();
+    for(const date in local){
+      local[date] = local[date].filter(sh=>sh.id!==id);
+      if(!local[date].length) delete local[date];
+    }
+    saveShiftsToLocal(local);
+    applyShiftsData(local);
+    showToast('Shift removed','ti-trash');
+  } else {
+    shiftsCollection.doc(id).delete()
+      .then(()=>showToast('Shift removed','ti-trash'))
+      .catch(e=>{console.error(e);showToast('Failed to remove shift','ti-alert-triangle');});
+  }
 }
 
 // ── Keyboard ──

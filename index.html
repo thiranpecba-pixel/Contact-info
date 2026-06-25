@@ -116,6 +116,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .toggle-wrap input:checked + .toggle-track::after{transform:translateX(18px)}
 .toggle-wrap input:disabled + .toggle-track{cursor:default;opacity:.5}
 
+/* ── MY STATUS (personal quick toggle) ── */
+.myid-banner{background:var(--blue-bg);border-bottom:0.5px solid rgba(24,95,165,0.22);padding:.55rem 1rem;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--blue-text)}
+.myid-banner span{flex:1;line-height:1.3}
+.myid-banner .icon-btn{width:30px;height:30px;font-size:14px;border:none;color:var(--blue-text);flex-shrink:0}
+
+.mystatus-bar{position:sticky;top:54px;z-index:90;background:var(--bg);border-bottom:0.5px solid var(--border);padding:.55rem 1rem;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow)}
+.mystatus-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:0.5px solid var(--border)}
+.mystatus-info{flex:1;min-width:0}
+.mystatus-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mystatus-name b{color:var(--text3);font-weight:500}
+.mystatus-sub{font-size:10.5px;color:var(--text3)}
+.mystatus-sub.on{color:var(--green-text)}
+.mystatus-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.mystatus-actions .icon-btn{width:30px;height:30px;font-size:14px}
+
+/* Dedicated full-screen view, opened via a personal bookmark link (?me=) */
+.myview-wrap{padding:2.4rem 1.2rem 3rem;display:none;flex-direction:column;align-items:center;min-height:calc(100vh - 54px)}
+.myview-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:2.1rem 1.5rem;width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.myview-avatar{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin-bottom:12px;border:0.5px solid var(--border)}
+.myview-name{font-size:19px;font-weight:700;color:var(--text)}
+.myview-sub{font-size:12.5px;color:var(--text3);margin-bottom:20px}
+.myview-status{font-size:15px;font-weight:700;margin-bottom:12px}
+.myview-status.on{color:var(--green-text)}
+.myview-status.off{color:var(--text3)}
+.myview-toggle-wrap{width:84px;height:46px;position:relative;display:inline-block;margin-bottom:22px;flex-shrink:0}
+.myview-toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+.myview-toggle-wrap .toggle-track{position:absolute;inset:0;background:var(--bg3);border-radius:23px;cursor:pointer;transition:background .2s;border:0.5px solid var(--border)}
+.myview-toggle-wrap .toggle-track::after{content:'';position:absolute;width:38px;height:38px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,0.25)}
+.myview-toggle-wrap input:checked + .toggle-track{background:var(--green);border-color:var(--green)}
+.myview-toggle-wrap input:checked + .toggle-track::after{transform:translateX(38px)}
+.myview-link{font-size:12.5px;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;cursor:pointer}
+.myview-footer{margin-top:20px;display:flex;gap:18px}
+
+/* Who-am-I picker (mirrors the duty sheet look) */
+.whoami-item-row{cursor:pointer;touch-action:manipulation}
+.whoami-item-row:active{background:var(--bg2)}
+.whoami-footer{padding:.5rem 1rem .8rem;text-align:center}
+
 /* Admin card actions */
 .card-actions{display:flex;gap:5px;margin-top:7px}
 .card-edit-btn{flex:1;font-size:11px;padding:5px 0;border-radius:8px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;touch-action:manipulation}
@@ -177,7 +215,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* ── PRINT ── */
 @media print{
-  .topnav,.admin-bar,.toolbar,.fab,.fab-label,.card-actions,.duty-row,.toast{display:none!important}
+  .topnav,.admin-bar,.toolbar,.fab,.fab-label,.card-actions,.duty-row,.toast,.myid-banner,.mystatus-bar{display:none!important}
   body{background:#fff}
   .grid{grid-template-columns:repeat(3,1fr)!important}
   .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
@@ -206,6 +244,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </nav>
 
+<!-- MY STATUS: quick-toggle setup prompt (shown until set up or dismissed) -->
+<div class="myid-banner" id="myid-banner" style="display:none">
+  <i class="ti ti-bolt" aria-hidden="true"></i>
+  <span>Set up your quick toggle to flip your own duty status in one tap, with no scrolling.</span>
+  <button class="btn btn-sm" onclick="openWhoAmI()">Set up</button>
+  <button class="icon-btn" onclick="dismissMyIdPrompt()" title="Dismiss"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- MY STATUS: sticky personal toggle (shown once you're identified) -->
+<div class="mystatus-bar" id="mystatus-bar" style="display:none"></div>
+
 <!-- ADMIN BAR -->
 <div class="admin-bar" id="admin-bar">
   <i class="ti ti-lock" style="font-size:15px" aria-hidden="true"></i>
@@ -215,6 +264,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <span id="pin-err" style="color:var(--red);font-size:12px;display:none">Wrong PIN</span>
 </div>
 
+<div id="directory-main">
 <!-- STATS -->
 <div class="stats-row" id="stats-row"></div>
 
@@ -242,6 +292,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="grid-wrap">
   <div class="grid" id="staff-grid"></div>
 </div>
+</div>
+
+<!-- MY VIEW: dedicated full-screen toggle, opened via a personal bookmark link (?me=) -->
+<div class="myview-wrap" id="myview-wrap"></div>
 
 <!-- FAB: Quick duty toggle for admin -->
 <div class="fab-label" id="fab-label">Duty Manager</div>
@@ -263,6 +317,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <button class="duty-tab" id="dt-Agent" onclick="setDutyTab('Agent')">Agents</button>
     </div>
     <div class="duty-list" id="duty-list"></div>
+  </div>
+</div>
+
+<!-- WHO ARE YOU: picker for setting up the personal quick toggle -->
+<div class="duty-sheet-overlay" id="whoami-overlay" onclick="handleWhoAmIOverlay(event)">
+  <div class="duty-sheet" id="whoami-sheet">
+    <div class="duty-sheet-handle"></div>
+    <div class="duty-sheet-header">
+      <span class="duty-sheet-title"><i class="ti ti-user-circle" style="vertical-align:-2px;margin-right:5px;color:var(--blue)" aria-hidden="true"></i>Who are you?</span>
+      <button class="icon-btn" onclick="closeWhoAmI()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="duty-list" id="whoami-list"></div>
+    <div class="whoami-footer" id="whoami-footer"></div>
   </div>
 </div>
 
@@ -305,6 +372,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
       <div class="panel-actions">
         <button class="btn btn-primary" onclick="submitForm()"><i class="ti ti-check" aria-hidden="true"></i> <span id="submit-label">Add member</span></button>
+        <button class="btn" id="copylink-btn" style="display:none;flex:0 0 auto;min-width:unset;padding:11px 14px" onclick="copyPersonLink(editId)" title="Copy this person's personal duty-toggle link"><i class="ti ti-link" aria-hidden="true"></i></button>
         <button class="btn btn-danger" id="delete-btn" style="display:none;flex:0 0 auto;min-width:unset;padding:11px 14px" onclick="deleteCurrentEdit()"><i class="ti ti-trash" aria-hidden="true"></i></button>
         <button class="btn" style="flex:0 0 auto;min-width:unset" onclick="closePanel()">Cancel</button>
       </div>
@@ -351,10 +419,18 @@ let sort = 'name';
 let editId = null;
 let dutyTab = 'All';
 let theme = localStorage.getItem('sd_theme') || 'light';
+let myId = null;
+let meDedicatedView = false;
 
 // ── Persistence (Firestore, real-time) ──
 function renderLoading(){
-  document.getElementById('staff-grid').innerHTML=`<div class="empty"><i class="ti ti-loader-2" aria-hidden="true"></i><p>Loading staff directory…</p></div>`;
+  if(meDedicatedView){
+    document.getElementById('directory-main').style.display='none';
+    document.getElementById('myview-wrap').style.display='flex';
+    document.getElementById('myview-wrap').innerHTML=`<div class="empty" style="padding-top:3rem"><i class="ti ti-loader-2" aria-hidden="true"></i><p>Loading your status…</p></div>`;
+  } else {
+    document.getElementById('staff-grid').innerHTML=`<div class="empty"><i class="ti ti-loader-2" aria-hidden="true"></i><p>Loading staff directory…</p></div>`;
+  }
 }
 async function initFirestoreData(){
   renderLoading();
@@ -374,6 +450,7 @@ async function initFirestoreData(){
     staff = snapshot.docs.map(d=>({id:d.id,...d.data()}));
     renderAll();
     if(document.getElementById('duty-sheet-overlay').classList.contains('open'))renderDutyList();
+    if(document.getElementById('whoami-overlay').classList.contains('open'))renderWhoAmIList();
   }, err=>{
     console.error('Firestore snapshot error:',err);
     showToast('Connection lost — check Firebase setup','ti-alert-triangle');
@@ -462,7 +539,170 @@ function renderGrid(){
   }).join('');
 }
 
-function renderAll(){renderStats();renderGrid();}
+function renderAll(){
+  if(meDedicatedView){
+    document.getElementById('directory-main').style.display='none';
+    document.getElementById('myview-wrap').style.display='flex';
+    document.getElementById('mystatus-bar').style.display='none';
+    document.getElementById('myid-banner').style.display='none';
+    renderMyView();
+  } else {
+    document.getElementById('directory-main').style.display='';
+    document.getElementById('myview-wrap').style.display='none';
+    renderStats();renderGrid();renderMyStatus();
+  }
+}
+
+// ── My Status (personal quick toggle) ──
+function initMyStatus(){
+  const meParam=new URLSearchParams(location.search).get('me');
+  if(meParam){
+    myId=meParam;
+    meDedicatedView=true;
+    localStorage.setItem('sd_my_id', meParam);
+  } else {
+    myId=localStorage.getItem('sd_my_id');
+  }
+}
+function getMyRecord(){return myId ? (staff.find(s=>s.id===myId)||null) : null;}
+
+function renderMyStatus(){
+  const bar=document.getElementById('mystatus-bar');
+  const banner=document.getElementById('myid-banner');
+  let rec=getMyRecord();
+  if(myId && !rec){ // stale id (e.g. that staff member was removed)
+    localStorage.removeItem('sd_my_id');
+    myId=null;
+  }
+  if(rec){
+    banner.style.display='none';
+    bar.style.display='flex';
+    const [bgC,textC]=getAvatarColor(rec.name);
+    bar.innerHTML=`
+      <div class="mystatus-avatar" style="background:${bgC};color:${textC}">${getInitials(rec.name)}</div>
+      <div class="mystatus-info">
+        <div class="mystatus-name">${escH(rec.name)} <b>· you</b></div>
+        <div class="mystatus-sub${rec.duty?' on':''}">${rec.duty?'On duty':'Off duty'}</div>
+      </div>
+      <div class="mystatus-actions">
+        <label class="toggle-wrap" title="Toggle my duty">
+          <input type="checkbox" ${rec.duty?'checked':''} onchange="toggleDuty('${rec.id}',this.checked)" aria-label="Toggle my duty" />
+          <span class="toggle-track"></span>
+        </label>
+        <button class="icon-btn" onclick="copyMyLink()" title="Copy my personal link"><i class="ti ti-link"></i></button>
+        <button class="icon-btn" onclick="openWhoAmI()" title="Not you? Switch"><i class="ti ti-switch-horizontal"></i></button>
+      </div>`;
+  } else {
+    bar.style.display='none';
+    banner.style.display = localStorage.getItem('sd_myid_prompt_dismissed')==='1' ? 'none' : 'flex';
+  }
+}
+function dismissMyIdPrompt(){
+  localStorage.setItem('sd_myid_prompt_dismissed','1');
+  document.getElementById('myid-banner').style.display='none';
+}
+
+// Dedicated full-screen view, opened via a personal bookmark link (?me=)
+function renderMyView(){
+  const wrap=document.getElementById('myview-wrap');
+  const rec=getMyRecord();
+  if(!rec){
+    wrap.innerHTML=`<div class="empty" style="padding-top:3rem"><i class="ti ti-user-question" aria-hidden="true"></i><p>Couldn't find your profile.<br>Ask your manager for an updated link, or pick yourself below.</p></div>
+      <div class="myview-footer" style="margin-top:14px"><a class="myview-link" href="javascript:void(0)" onclick="openWhoAmI()"><i class="ti ti-user-circle" aria-hidden="true" style="margin-right:3px;vertical-align:-1px"></i>Who am I?</a></div>`;
+    return;
+  }
+  const [bgC,textC]=getAvatarColor(rec.name);
+  wrap.innerHTML=`
+    <div class="myview-card">
+      <div class="myview-avatar" style="background:${bgC};color:${textC}">${getInitials(rec.name)}</div>
+      <div class="myview-name">${escH(rec.name)}</div>
+      <div class="myview-sub">${escH(rec.role)}${rec.dept?' · '+escH(rec.dept):''}</div>
+      <div class="myview-status ${rec.duty?'on':'off'}">${rec.duty?'You are on duty':'You are off duty'}</div>
+      <label class="myview-toggle-wrap" title="Toggle my duty">
+        <input type="checkbox" ${rec.duty?'checked':''} onchange="toggleDuty('${rec.id}',this.checked)" aria-label="Toggle my duty" />
+        <span class="toggle-track"></span>
+      </label>
+      <a class="myview-link" href="javascript:void(0)" onclick="exitMyView()"><i class="ti ti-layout-grid" aria-hidden="true" style="margin-right:4px;vertical-align:-1px"></i>View full directory</a>
+    </div>
+    <div class="myview-footer">
+      <a class="myview-link" href="javascript:void(0)" onclick="copyMyLink()"><i class="ti ti-link" aria-hidden="true" style="margin-right:3px;vertical-align:-1px"></i>Copy this link</a>
+      <a class="myview-link" href="javascript:void(0)" onclick="openWhoAmI()"><i class="ti ti-switch-horizontal" aria-hidden="true" style="margin-right:3px;vertical-align:-1px"></i>Not me</a>
+    </div>`;
+}
+function exitMyView(){
+  meDedicatedView=false;
+  const url=new URL(location.href);
+  url.searchParams.delete('me');
+  history.replaceState({}, '', url.toString());
+  renderAll();
+}
+
+// Copy a personal toggle link (the current user's, or — from the edit panel — any staff member's)
+function copyLinkFor(id, label){
+  if(!id){showToast('Set up your name first','ti-alert-triangle');return;}
+  const url=new URL(location.href);
+  url.searchParams.set('me', id);
+  url.hash='';
+  const link=url.toString();
+  const done=()=>showToast(label,'ti-copy');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done).catch(()=>fallbackCopy(link,done));
+  } else {
+    fallbackCopy(link,done);
+  }
+}
+function fallbackCopy(text,done){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}
+  catch(e){showToast('Could not copy — long-press the address bar to copy it','ti-alert-triangle');}
+  document.body.removeChild(ta);
+}
+function copyMyLink(){copyLinkFor(myId,'Link copied — add it to your home screen');}
+function copyPersonLink(id){
+  const s=staff.find(x=>x.id===id);
+  copyLinkFor(id, s?`Link copied for ${s.name}`:'Link copied');
+}
+
+// "Who are you?" picker — sets up the personal quick toggle
+function openWhoAmI(){
+  renderWhoAmIList();
+  document.getElementById('whoami-footer').innerHTML = myId ? `<a class="myview-link" href="javascript:void(0)" onclick="forgetMe()"><i class="ti ti-x" aria-hidden="true" style="margin-right:3px;vertical-align:-1px"></i>Clear my quick toggle</a>` : '';
+  document.getElementById('whoami-overlay').classList.add('open');
+}
+function closeWhoAmI(){document.getElementById('whoami-overlay').classList.remove('open');}
+function handleWhoAmIOverlay(e){if(e.target===document.getElementById('whoami-overlay'))closeWhoAmI();}
+function renderWhoAmIList(){
+  const list=[...staff].sort((a,b)=>a.name.localeCompare(b.name));
+  document.getElementById('whoami-list').innerHTML = list.map(s=>{
+    const [bgC,textC]=getAvatarColor(s.name);
+    return `<div class="duty-item whoami-item-row" onclick="selectWhoAmI('${s.id}')">
+      <div class="duty-item-avatar" style="background:${bgC};color:${textC}">${getInitials(s.name)}</div>
+      <div class="duty-item-info">
+        <div class="duty-item-name">${escH(s.name)}</div>
+        <div class="duty-item-role">${escH(s.role)}${s.dept?' · '+escH(s.dept):''}</div>
+      </div>
+      <i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px" aria-hidden="true"></i>
+    </div>`;
+  }).join('');
+}
+function selectWhoAmI(id){
+  localStorage.setItem('sd_my_id', id);
+  localStorage.setItem('sd_myid_prompt_dismissed','1');
+  myId=id;
+  closeWhoAmI();
+  if(!meDedicatedView)renderMyStatus();else renderMyView();
+  const s=staff.find(x=>x.id===id);
+  showToast(s?`Quick toggle set up for ${s.name}`:'Quick toggle set up','ti-user-check');
+}
+function forgetMe(){
+  localStorage.removeItem('sd_my_id');
+  myId=null;
+  closeWhoAmI();
+  renderMyStatus();
+  showToast('Quick toggle cleared','ti-x');
+}
 
 // ── Duty toggle (anyone can change, synced live via Firestore) ──
 function toggleDuty(id,val){
@@ -550,6 +790,7 @@ function openAdd(){
   document.getElementById('panel-title').textContent='Add member';
   document.getElementById('submit-label').textContent='Add member';
   document.getElementById('delete-btn').style.display='none';
+  document.getElementById('copylink-btn').style.display='none';
   ['f-name','f-dept','f-phone','f-whatsapp','f-email'].forEach(id=>{document.getElementById(id).value='';});
   document.getElementById('f-role').value='Technician';
   document.getElementById('form-error').style.display='none';
@@ -562,6 +803,7 @@ function openEdit(id){
   document.getElementById('panel-title').textContent='Edit member';
   document.getElementById('submit-label').textContent='Save changes';
   document.getElementById('delete-btn').style.display='';
+  document.getElementById('copylink-btn').style.display='';
   document.getElementById('f-name').value=s.name;
   document.getElementById('f-role').value=s.role;
   document.getElementById('f-dept').value=s.dept||'';
@@ -642,13 +884,14 @@ async function exportPDF(){
 
 // ── Keyboard ──
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closePanel();closeDutySheet();}
+  if(e.key==='Escape'){closePanel();closeDutySheet();closeWhoAmI();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();document.getElementById('search-input')?.focus();}
   if(e.key==='Enter'&&document.activeElement?.id==='pin-input')unlockAdmin();
 });
 
 // ── Init ──
 applyTheme();
+initMyStatus();
 initFirestoreData();
 </script>
 </body>

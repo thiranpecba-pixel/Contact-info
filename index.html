@@ -911,17 +911,32 @@ function renderWhoAmIList(){
   const list=[...staff].sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById('whoami-list').innerHTML = list.map(s=>{
     const [bgC,textC]=getAvatarColor(s.name);
+    const pinBadge = s.pin
+      ? `<i class="ti ti-lock" style="color:var(--text3);font-size:13px;margin-right:2px" title="PIN protected" aria-label="PIN protected"></i>`
+      : '';
     return `<div class="duty-item whoami-item-row" onclick="selectWhoAmI('${s.id}')">
       <div class="duty-item-avatar" style="background:${bgC};color:${textC}">${getInitials(s.name)}</div>
       <div class="duty-item-info">
         <div class="duty-item-name">${escH(s.name)}</div>
         <div class="duty-item-role">${escH(s.role)}${s.dept?' · '+escH(s.dept):''}</div>
       </div>
+      ${pinBadge}
       <i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px" aria-hidden="true"></i>
     </div>`;
   }).join('');
 }
 function selectWhoAmI(id){
+  const s = staff.find(x => x.id === id);
+  if(!s) return;
+  // If the target user has a PIN set, require it before switching
+  if(s.pin){
+    closeWhoAmI();
+    openSwitchPinDialog(id);
+  } else {
+    confirmSelectWhoAmI(id);
+  }
+}
+function confirmSelectWhoAmI(id){
   localStorage.setItem('sd_my_id', id);
   localStorage.setItem('sd_myid_prompt_dismissed','1');
   sessionStorage.removeItem('sd_mystatus_hidden');
@@ -940,7 +955,21 @@ function forgetMe(){
   showToast('Quick toggle cleared','ti-x');
 }
 
-// ── Duty toggle ──
+// Open PIN dialog specifically for switching identity in "Who are you?"
+function openSwitchPinDialog(targetId){
+  const s = staff.find(x => x.id === targetId);
+  if(!s) return;
+  const [bgC, textC] = getAvatarColor(s.name);
+  document.getElementById('pin-dialog-avatar').style.cssText = `background:${bgC};color:${textC}`;
+  document.getElementById('pin-dialog-avatar').textContent = getInitials(s.name);
+  document.getElementById('pin-dialog-name').textContent = s.name;
+  document.getElementById('pin-dialog-sub').innerHTML =
+    `<i class="pin-lock-icon ti ti-lock"></i>Enter ${s.name.split(' ')[0]}'s PIN to switch`;
+  pinState = { staffId: targetId, newVal: null, entered: '', mode: 'switch' };
+  updatePinDots();
+  document.getElementById('pin-err-msg').textContent = '';
+  document.getElementById('pin-overlay').classList.add('open');
+}
 // Direct commit (used after PIN verified, by "My Status" bar, and myview)
 function commitToggleDuty(id, val){
   staffCollection.doc(id).update({duty:val})
@@ -972,7 +1001,7 @@ function openPinDialog(staffId, newVal){
   const hasPIN = !!(s.pin);
   document.getElementById('pin-dialog-sub').innerHTML =
     `<i class="pin-lock-icon ti ti-lock"></i>Enter ${hasPIN ? s.name.split(' ')[0]+"'s PIN" : 'admin PIN'} to ${newVal ? 'mark on duty' : 'mark off duty'}`;
-  pinState = { staffId, newVal, entered: '' };
+  pinState = { staffId, newVal, entered: '', mode: 'duty' };
   updatePinDots();
   document.getElementById('pin-err-msg').textContent = '';
   document.getElementById('pin-overlay').classList.add('open');
@@ -1017,8 +1046,13 @@ function pinSubmit(){
     // Capture values BEFORE closePinDialog() wipes pinState
     const sid = pinState.staffId;
     const val = pinState.newVal;
+    const mode = pinState.mode;
     closePinDialog();
-    commitToggleDuty(sid, val);
+    if(mode === 'switch'){
+      confirmSelectWhoAmI(sid);
+    } else {
+      commitToggleDuty(sid, val);
+    }
   } else {
     // Flash dots red, clear after short delay
     for(let i = 0; i < 4; i++) document.getElementById('pd' + i).classList.add('error');

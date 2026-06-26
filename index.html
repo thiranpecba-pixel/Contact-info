@@ -337,6 +337,95 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   .grid{grid-template-columns:repeat(3,1fr)!important}
   .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
 }
+
+/* ════════════════════════════════════════════════════════
+   ANIMATIONS — purely additive. Nothing above this block was
+   changed; these rules only add motion (entrances, transitions,
+   press feedback) on top of the existing markup/behaviour.
+   ════════════════════════════════════════════════════════ */
+
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardPop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes overlayFade{from{opacity:0}to{opacity:1}}
+@keyframes sheetSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+
+/* Page entrance */
+.topnav{animation:fadeInDown .35s ease}
+.myid-banner,.mystatus-bar{animation:fadeInDown .3s ease}
+.avail-nav-btn{animation:popIn .35s cubic-bezier(.34,1.56,.64,1) .25s backwards}
+
+/* Stat cards & directory cards — staggered entrance. Replays whenever the
+   list is rebuilt (typing a search, changing filter/sort, live data updates) */
+.stat-card,.grid .card{animation:cardPop .32s cubic-bezier(.22,1,.36,1) backwards}
+.stat-card:nth-child(1),.grid .card:nth-child(1){animation-delay:0s}
+.stat-card:nth-child(2),.grid .card:nth-child(2){animation-delay:.03s}
+.stat-card:nth-child(3),.grid .card:nth-child(3){animation-delay:.06s}
+.stat-card:nth-child(4),.grid .card:nth-child(4){animation-delay:.09s}
+.grid .card:nth-child(5){animation-delay:.12s}
+.grid .card:nth-child(6){animation-delay:.15s}
+.grid .card:nth-child(7){animation-delay:.18s}
+.grid .card:nth-child(n+8){animation-delay:.2s}
+
+/* Card hover / press feedback */
+.card{transition:border-color .15s,transform .2s ease,box-shadow .2s ease}
+@media(hover:hover){.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}}
+.card:active{transform:scale(.985)}
+
+/* Buttons — tactile press feedback (transitions widened, original properties kept) */
+.btn{transition:background .15s,transform .12s ease}
+.btn:active{transform:scale(.96)}
+.icon-btn{transition:background .15s,color .15s,transform .12s ease}
+.icon-btn:active{transform:scale(.9)}
+.filter-btn:active,.duty-tab:active{transform:scale(.94)}
+.card-edit-btn,.card-del-btn{transition:background .15s,transform .12s ease}
+.card-edit-btn:active,.card-del-btn:active{transform:scale(.93)}
+.avail-action-btn{transition:background .15s,transform .12s ease}
+.avail-action-btn:active{transform:scale(.9)}
+.pin-key{transition:background .12s,transform .1s ease}
+.pin-key:active{transform:scale(.92)}
+.shift-add-btn,.shift-item-del{transition:background .15s,transform .12s ease}
+.shift-add-btn:active{transform:scale(.95)}
+.shift-item-del:active{transform:scale(.9)}
+
+/* Toggle switches — springier snap on the thumb */
+.toggle-track::after{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+
+/* Sheets / panels / dialogs — fade + slide on open.
+   Driven entirely by the existing .open class, so opening/closing logic is untouched. */
+.duty-sheet-overlay.open,.panel-overlay.open,.shift-overlay.open,.pin-overlay.open{animation:overlayFade .2s ease}
+.duty-sheet-overlay.open .duty-sheet,
+.panel-overlay.open .panel,
+.shift-overlay.open .shift-sheet{animation:sheetSlideUp .3s cubic-bezier(.22,1,.36,1)}
+
+/* List rows inside sheets — light stagger */
+.duty-item,.avail-item,.shift-item{animation:fadeInUp .22s ease backwards}
+.duty-item:nth-child(1),.avail-item:nth-child(1),.shift-item:nth-child(1){animation-delay:0s}
+.duty-item:nth-child(2),.avail-item:nth-child(2),.shift-item:nth-child(2){animation-delay:.02s}
+.duty-item:nth-child(3),.avail-item:nth-child(3),.shift-item:nth-child(3){animation-delay:.04s}
+.duty-item:nth-child(4),.avail-item:nth-child(4),.shift-item:nth-child(4){animation-delay:.06s}
+.duty-item:nth-child(n+5),.avail-item:nth-child(n+5),.shift-item:nth-child(n+5){animation-delay:.08s}
+
+/* FAB (quick duty manager shortcut) */
+.fab.visible{animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+.fab-label.visible{animation:fadeInDown .25s ease}
+
+/* Wrong-PIN shake feedback */
+.pin-dot.error{animation:shake .35s ease}
+
+/* Toast — rise + fade instead of a flat opacity snap */
+.toast{transition:opacity .3s ease,transform .3s ease;transform:translateY(10px)}
+.toast.show{transform:translateY(0)}
+
+/* Soft focus glow on inputs */
+.search-wrap input:focus,.avail-search-wrap input:focus,.form-group input:focus,.form-group select:focus,.admin-bar input:focus{box-shadow:0 0 0 3px rgba(24,95,165,0.12);transition:border-color .15s,box-shadow .15s}
+
+/* Respect users who've asked for less motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
